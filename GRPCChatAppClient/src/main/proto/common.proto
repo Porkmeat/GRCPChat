@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package common;
+
+option java_multiple_files = true;
+option java_package = "com.chatapp.common";
+
+message User {
+  string username = 1;
+  int32 user_id = 2;
+}
+
+message Empty {
+}
+
+message ServiceResponse {
+
+    string response = 1;
+    int32 response_code = 2;
+}

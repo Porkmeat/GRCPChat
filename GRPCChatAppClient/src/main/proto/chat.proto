@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+import "common.proto";
+
+package chat;
+
+option java_multiple_files = true;
+option java_package = "com.chatapp.chat";
+
+
+service ChatService {
+
+  rpc ReceiveMessage(common.Empty) returns (stream ChatMessage);
+  rpc GetFriends(common.User) returns (FriendList);
+  rpc SendMessage(ChatMessage) returns (common.ServiceResponse);
+  rpc GetMessages(Chat) returns (MessageList);
+}
+
+
+
+message UserFriend {
+
+  common.User user = 1;
+  string alias = 2;
+  optional bytes profile_picture = 3;
+  optional string last_msg = 4;
+  optional int32 unseen_chats = 5;
+  optional string timestamp = 6;
+  optional bool is_sender = 7;
+}
+
+message FriendList {
+
+  repeated UserFriend friends = 1;
+}
+
+message ChatMessage {
+
+  Chat chat = 1;
+  string message = 2;
+  string timestamp = 3;
+}
+
+message MessageList {
+
+  repeated ChatMessage messages = 1;
+}
+
+message Chat {
+
+  common.User user = 1;
+  common.User friend = 2;
+}
+
+

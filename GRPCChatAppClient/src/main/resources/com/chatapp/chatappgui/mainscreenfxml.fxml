@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200.0" minWidth="300.0" prefHeight="608.0" prefWidth="860.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chatapp.chatappgui.MainScreenController">
+   <children>
+      <GridPane gridLinesVisible="true" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="100.0" percentWidth="35.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <VBox prefHeight="519.0" prefWidth="195.0">
+               <children>
+                  <AnchorPane fx:id="usercard" prefHeight="60.0" prefWidth="208.0">
+                     <children>
+                        <Circle fx:id="mainuserimg" fill="#ffffff00" layoutX="30.0" layoutY="30.0" onMouseClicked="#activateUserToggle" radius="25.0" stroke="TRANSPARENT" strokeType="INSIDE" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                        <Label fx:id="mainusername" layoutX="69.0" layoutY="22.0" text="Label" AnchorPane.leftAnchor="75.0">
+                           <font>
+                              <Font name="Arial Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <Separator layoutX="8.0" layoutY="62.0" prefHeight="0.0" prefWidth="827.0" AnchorPane.bottomAnchor="-3.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" />
+                        <ToggleButton fx:id="usercardtoggle" focusTraversable="false" layoutX="171.0" layoutY="18.0" mnemonicParsing="false" onAction="#openUserCard" visible="false" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        
+                     </children>
+                  </AnchorPane>
+                  <TabPane fx:id="mainTabPane" prefHeight="516.0" prefWidth="301.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+                    <tabs>
+                      <Tab fx:id="contactsTab" text="Contacts">
+                           <content>
+                              <ListView fx:id="userlist" prefHeight="48.0" prefWidth="301.0" style="-fx-background-color: transparent;" />
+                           </content>
+                        </Tab>
+                        <Tab text="Add Contact">
+                           <content>
+                              <FlowPane alignment="TOP_CENTER" columnHalignment="CENTER" orientation="VERTICAL" prefHeight="200.0" prefWidth="200.0" vgap="10.0">
+                                 <children>
+                                    <Label prefHeight="17.0" prefWidth="155.0" text="Add contact:">
+                                       <font>
+                                          <Font name="Calibri" size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField fx:id="addFriendField" promptText="Enter Username" />
+                                    <Button mnemonicParsing="false" onAction="#addFriend" text="Send Request" />
+                                 </children>
+                                 <padding>
+                                    <Insets top="30.0" />
+                                 </padding></FlowPane>
+                           </content>
+                        </Tab>
+                      <Tab fx:id="requestTab" disable="true" text="Requests">
+                           <content>
+                              <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                                 <children>
+                                    <ListView fx:id="requestlist" prefWidth="301.0" style="-fx-background-color: transparent;" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                    <HBox fx:id="requestButtons" alignment="CENTER" disable="true" layoutY="459.0" prefHeight="60.0" prefWidth="301.0" spacing="30.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                       <children>
+                                          <Button fx:id="requestAccept" mnemonicParsing="false" onAction="#acceptRequest" text="Accept" textFill="#0d8600" />
+                                          <Button fx:id="requestDeny" mnemonicParsing="false" onAction="#denyRequest" text="Deny" textFill="#e13b3b" />
+                                          <Button fx:id="requestBlock" mnemonicParsing="false" onAction="#blockRequest" text="Block" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                    </tabs>
+                  </TabPane>
+               </children>
+            </VBox>
+            <BorderPane fx:id="chatscreen" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+               <top>
+                  <AnchorPane prefHeight="60.0" prefWidth="559.0" style="-fx-background-color: #eeeeee;" BorderPane.alignment="CENTER">
+                     <children>
+                        <ImageView fx:id="mainchatimg" fitHeight="50.0" fitWidth="50.0" layoutX="16.0" layoutY="14.0" pickOnBounds="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                           <image>
+                              <Image url="@whitecoat_seal_T3506.jpg" />
+                           </image>
+                        </ImageView>
+                        <Label fx:id="mainchatusername" layoutX="68.0" layoutY="22.0" text="Label" AnchorPane.leftAnchor="75.0">
+                           <font>
+                              <Font name="Arial Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <ToggleButton fx:id="friendcardtoggle" focusTraversable="false" layoutX="384.0" layoutY="18.0" mnemonicParsing="false" visible="false" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+               </top>
+               <bottom>
+                  <AnchorPane maxHeight="150.0" prefWidth="559.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <Separator layoutX="115.0" layoutY="35.0" prefWidth="200.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="-1.0" />
+                        <TextArea fx:id="chatinput" layoutX="115.0" maxHeight="100.0" prefHeight="45.0" promptText="Write a message" wrapText="true" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="85.0" AnchorPane.rightAnchor="55.0" AnchorPane.topAnchor="15.0">
+                           <padding>
+                              <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                           </padding>
+                        </TextArea>
+                        <Button fx:id="sendbutton" contentDisplay="GRAPHIC_ONLY" defaultButton="true" layoutX="519.0" layoutY="26.0" mnemonicParsing="false" onAction="#sendMsg" prefHeight="25.0" prefWidth="26.0" AnchorPane.rightAnchor="15.0" />
+                     </children>
+                  </AnchorPane>
+               </bottom>
+               <center>
+                  <ScrollPane fx:id="chatwindow" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" pickOnBounds="false" prefHeight="200.0" prefWidth="200.0" stylesheets="@fxml.css" vvalue="1.0" BorderPane.alignment="CENTER">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </ScrollPane>
+               </center>
+            </BorderPane>
+         </children>
+      </GridPane>
+   </children>
+</AnchorPane>

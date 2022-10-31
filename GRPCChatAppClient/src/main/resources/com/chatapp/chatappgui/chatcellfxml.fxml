@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" fx:id="chatBubble" maxHeight="Infinity" maxWidth="300.0" minWidth="50.0" style="-fx-background-radius: 30;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chatapp.chatappgui.ChatcellfxmlController">
+   <children>
+      <Label fx:id="chatMessage" alignment="TOP_LEFT" layoutY="13.0" maxHeight="Infinity" maxWidth="280.0" text="Label" wrapText="true" AnchorPane.bottomAnchor="15.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0">
+         <font>
+            <Font size="14.0" />
+         </font></Label>
+      <Label fx:id="chatTimestamp" layoutX="562.0" layoutY="101.0" text="Label" textAlignment="RIGHT" textFill="#545454" AnchorPane.bottomAnchor="3.0" AnchorPane.rightAnchor="5.0">
+         <font>
+            <Font size="11.0" />
+         </font></Label>
+   </children>
+</AnchorPane>

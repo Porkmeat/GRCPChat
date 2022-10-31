@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+import "common.proto";
+
+package chat;
+
+option java_multiple_files = true;
+option java_package = "com.chatapp.chat";
+
+
+service ChatService {
+
+  rpc ReceiveMessage(common.Empty) returns (stream ChatMessage);
+  rpc SendMessage(ChatMessage) returns (common.ServiceResponse);
+  rpc GetMessages(Chat) returns (MessageList);
+}
+
+
+message ChatMessage {
+
+  Chat chat = 1;
+  string message = 2;
+  string timestamp = 3;
+}
+
+message MessageList {
+
+  repeated ChatMessage messages = 1;
+}
+
+message Chat {
+
+  common.User user = 1;
+  common.User friend = 2;
+}
+
+

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+import "common.proto";
+
+package friend;
+
+option java_multiple_files = true;
+option java_package = "com.chatapp.friends";
+
+
+service FriendManagingService {
+
+  rpc GetRequests(common.User) returns (stream UserList);
+  rpc GetFriends(common.User) returns (FriendList);
+  rpc SetFriendship(AnswerRequest) returns (common.ServiceResponse);
+}
+
+
+message UserFriend {
+
+  common.User user = 1;
+  string alias = 2;
+  optional bytes profile_picture = 3;
+  optional string last_msg = 4;
+  optional int32 unseen_chats = 5;
+  optional string timestamp = 6;
+  optional bool is_sender = 7;
+}
+
+message FriendList {
+
+  repeated UserFriend friends = 1;
+}
+
+message UserList {
+
+  repeated common.User users = 1;
+}
+
+message AnswerRequest {
+
+  enum Answer {
+    
+    ACCEPTED = 0;
+    DENIED = 1;
+    BLOCKED = 2;
+  }
+
+  common.User user = 1;
+  common.User requester = 2;
+  Answer answer = 3; 
+}
