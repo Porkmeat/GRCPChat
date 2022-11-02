@@ -8,17 +8,17 @@ import com.chatapp.common.ServiceResponse;
 import com.chatapp.common.User;
 import com.chatapp.database.MySqlConnection;
 import com.chatapp.friends.AnswerRequest;
+import com.chatapp.friends.AnswerRequest.Answer;
 import com.chatapp.friends.FriendList;
 import com.chatapp.friends.FriendManagingServiceGrpc;
+import com.chatapp.friends.FriendRequest;
 import com.chatapp.friends.UserFriend;
-import com.chatapp.friends.UserList;
-import com.chatapp.login.ServerResponse;
-import com.google.protobuf.MessageLite;
+import com.chatapp.grpcchatapp.FriendData;
+import com.chatapp.grpcchatapp.UserData;
 import io.grpc.stub.StreamObserver;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 /**
  *
@@ -28,43 +28,119 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
 
     @Override
     public void setFriendship(AnswerRequest request, StreamObserver<ServiceResponse> responseObserver) {
-        
+
+        int userId = request.getUser().getUserId();
+        int requesterId = request.getRequester().getUserId();
+        Answer answer = request.getAnswer();
+        MySqlConnection database = new MySqlConnection();
+
+        ServiceResponse.Builder response = ServiceResponse.newBuilder();
+
+        try {
+            
+            switch (answer) {
+                case ACCEPTED -> database.acceptRequest(userId, requesterId);
+                
+                case DENIED -> database.denyRequest(userId, requesterId);
+                
+                case BLOCKED -> database.blockRequest(userId, requesterId);
+            }
+            
+            response.setResponse("Request " + answer.getValueDescriptor().getName());
+            response.setResponseCode(1);
+            
+        } catch (Exception ex) {
+            
+            Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
+            response.setResponse("Internal error");
+            response.setResponseCode(0);
+            
+        }
+
+        responseObserver.onNext(response.build());
+        responseObserver.onCompleted();
     }
 
     @Override
     public void getFriends(User request, StreamObserver<FriendList> responseObserver) {
         int userId = request.getUserId();
-        
 
         FriendList.Builder response = FriendList.newBuilder();
         UserFriend.Builder friend = UserFriend.newBuilder();
         MySqlConnection database = new MySqlConnection();
         try {
-            JSONArray results = database.fetchFriends(userId);
-            for (int i = 0; i < results.length(); i++) {
-                JSONObject jsonobject = results.getJSONObject(i);
+            ArrayList<FriendData> results = database.fetchFriends(userId);
+            for (FriendData result : results) {
+
                 friend.setUser(User.newBuilder()
-                        .setUsername(jsonobject.getString("user_login"))
-                        .setUserId(jsonobject.getInt("contact_friend_id")))
-                        .setAlias(jsonobject.getString("contact_alias"))
-                        .setIsSender(jsonobject.getInt("contact_friend_id") == jsonobject.getInt("chat_user_sender"))
-                        .setLastMsg(jsonobject.getString("last_message"))
-                        .setTimestamp(jsonobject.getString("last_message_time"))
-                        .setUnseenChats(jsonobject.getInt("unseen_chats"));
-            response.addFriends(friend.build());
-            friend.clear();
+                        .setUsername(result.getUser().getUsername())
+                        .setUserId(result.getUser().getUserId()).build())
+                        .setAlias(result.getAlias())
+                        .setIsSender(result.isIsSender())
+                        .setLastMsg(result.getLastMsg())
+                        .setTimestamp(result.getTimestamp())
+                        .setUnseenChats(result.getUnseenChats());
+                response.addFriends(friend.build());
+                friend.clear();
             }
-            
+
         } catch (Exception ex) {
-            Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
         }
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
 
     @Override
-    public void getRequests(User request, StreamObserver<UserList> responseObserver) {
-        
+    public void getRequests(User request, StreamObserver<User> responseObserver) {
+        int userId = request.getUserId();
+
+        MySqlConnection database = new MySqlConnection();
+        User.Builder user = User.newBuilder();
+        try {
+            ArrayList<UserData> results = database.getRequests(userId);
+            for (UserData result : results) {
+                System.out.println(result.getUsername());
+                user.setUsername(result.getUsername());
+                user.setUserId(result.getUserId());
+                responseObserver.onNext(user.build());
+                user.clear();
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        responseObserver.onCompleted();
     }
 
+    @Override
+    public void addFriendship(FriendRequest request, StreamObserver<ServiceResponse> responseObserver) {
+        int userId = request.getUser().getUserId();
+        String username = request.getUser().getUsername();
+        String friendName = request.getFriend();
+        
+        MySqlConnection database = new MySqlConnection();
+
+        ServiceResponse.Builder response = ServiceResponse.newBuilder();
+        
+        try {
+            int friendId = database.getUserId(friendName);
+            if (friendId > 0) {
+                database.addFriend(userId, username, friendId, friendName);
+                response.setResponse("Request sent to " + friendName);
+                response.setResponseCode(1);
+            } else {
+                response.setResponse("User " + friendName + " doesn't exist");
+                response.setResponseCode(0);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
+            response.setResponse("Internal error");
+            response.setResponseCode(0);
+        }
+        
+        responseObserver.onNext(response.build());
+        responseObserver.onCompleted();
+    }
+    
+    
 }

@@ -11,6 +11,7 @@ service LoginService {
 
   rpc Login(LoginRequest) returns (ServerResponse);
   rpc Logout(common.Empty) returns (ServerResponse);
+  rpc CreateAccount(LoginRequest) returns (ServerResponse);
 }
 
 message LoginRequest {

@@ -4,6 +4,9 @@
  */
 package com.chatapp.database;
 
+import com.chatapp.grpcchatapp.FriendData;
+import com.chatapp.grpcchatapp.MessageData;
+import com.chatapp.grpcchatapp.UserData;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -142,14 +145,15 @@ public class MySqlConnection {
 //        }
     }
     
-    public JSONArray fetchFriends(int userid) throws Exception {
+    public ArrayList<FriendData> fetchFriends(int userid) throws Exception {
+        ArrayList<FriendData> friends = new ArrayList<>();
         try {
             connect();
             preparedStatement = connect
                     .prepareStatement("SELECT  u.user_login, uc.contact_friend_id, uc.contact_alias,"
-                            + "uc.contact_status, chat_uuid, c.chat_user_sender,"
+                            + "c.chat_user_sender,"
                             + "c.last_message, DATE_FORMAT(c.last_message_time,'%Y-%m-%dT%H:%i:%s') "
-                            + "AS last_message_time, c.last_message_seen,"
+                            + "AS last_message_time,"
                             + "c.unseen_chats FROM user_contacts uc LEFT JOIN chat c USING (chat_uuid) "
                             + "INNER JOIN user u ON u.user_id = uc.contact_friend_id "
                             + "WHERE uc.contact_user_id = ? AND uc.contact_status = 3;");
@@ -157,9 +161,13 @@ public class MySqlConnection {
 
             resultSet = preparedStatement.executeQuery();
             
+            while (resultSet.next()) {
+                friends.add(new FriendData(new UserData(resultSet.getString(1), resultSet.getInt(2))
+                        , resultSet.getString(3), resultSet.getInt(2) == resultSet.getInt(4), "profilepic"
+                        , resultSet.getString(5), resultSet.getString(6), resultSet.getInt(7)));
+            }
             
-            return convertToJSONArray(resultSet);
-            
+            return friends;            
             
         } catch (Exception ex) {
             throw ex;
@@ -168,23 +176,26 @@ public class MySqlConnection {
         }
     }
     
-    public JSONArray fetchMessages(int userid, int friendId) throws Exception {
+    public ArrayList<MessageData> fetchMessages(int userid, int friendId) throws Exception {
+        ArrayList<MessageData> messages = new ArrayList<>();
         try {
             connect();
             long chatUuid = generateChatUuid(userid,friendId);
             preparedStatement = connect
-                    .prepareStatement("SELECT DATE_FORMAT(message_datetime,'%Y-%m-%dT%H:%i:%s') "
-                            + "AS message_datetime, message_text, "
-                            + "message_user_id, message_seen FROM message "
+                    .prepareStatement("SELECT message_text, message_user_id,"
+                            + "DATE_FORMAT(message_datetime,'%Y-%m-%dT%H:%i:%s') "
+                            + "AS message_datetime, "
+                            + "message_seen FROM message "
                             + "WHERE chat_uuid = ? ORDER BY message_datetime;");
             
             preparedStatement.setLong(1, chatUuid);
-
             
             resultSet = preparedStatement.executeQuery();
             
-            
-            return convertToJSONArray(resultSet);
+            while (resultSet.next()) {
+                messages.add(new MessageData(resultSet.getString(1), resultSet.getInt(2), resultSet.getString(3), resultSet.getBoolean(4)));
+            }
+            return messages;
             
             
         } catch (Exception ex) {
@@ -267,21 +278,22 @@ public class MySqlConnection {
     
     
 
-    public ArrayList<String> getRequests(int userid) throws Exception {
-        ArrayList<String> requests = new ArrayList<>();
+    public ArrayList<UserData> getRequests(int userid) throws Exception {
+        ArrayList<UserData> requests = new ArrayList<>();
         try {
             connect();
             preparedStatement = connect
-                    .prepareStatement("SELECT contact_alias FROM user_contacts WHERE contact_user_id = ? AND contact_status = 2 ORDER BY contact_alias;");
+                    .prepareStatement("SELECT contact_alias, contact_friend_id FROM user_contacts"
+                            + " WHERE contact_user_id = ? AND contact_status = 2 ORDER BY contact_alias;");
             preparedStatement.setInt(1, userid);
 
             resultSet = preparedStatement.executeQuery();
             
             while (resultSet.next()) {
-                requests.add(resultSet.getString(1));
+                requests.add(new UserData(resultSet.getString(1),resultSet.getInt(2)));
             }
-            
             return requests;
+            
         } catch (Exception ex) {
             throw ex;
         } finally {
