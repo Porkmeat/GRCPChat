@@ -4,8 +4,9 @@
  */
 package com.chatapp.service;
 
-import com.chatapp.common.Empty;
+import com.chatapp.common.GetRequest;
 import com.chatapp.database.MySqlConnection;
+import com.chatapp.grpcchatapp.JWToken;
 import com.chatapp.login.LoginRequest;
 import com.chatapp.login.LoginServiceGrpc;
 import com.chatapp.login.ServerResponse;
@@ -22,7 +23,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
 
     @Override
-    public void logout(Empty request, StreamObserver<ServerResponse> responseObserver) {
+    public void logout(GetRequest request, StreamObserver<ServerResponse> responseObserver) {
 
     }
 
@@ -35,11 +36,13 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
         MySqlConnection database = new MySqlConnection();
         try {
             if (database.checkPassword(username, password)) {
-                response.setToken("Success").setResponseCode(1);
+                int userId = database.getUserId(username);
+                JWToken token = new JWToken(username, userId);
+                response.setToken(token.toString()).setResponseCode(1);
             } else {
                 response.setToken("Connection Failed!").setResponseCode(0);
             }
-            
+
         } catch (Exception ex) {
             Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -51,12 +54,12 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
     public void createAccount(LoginRequest request, StreamObserver<ServerResponse> responseObserver) {
         String username = request.getUsername();
         String password = request.getPassword();
-        
+
         Random random = new Random();
         int salt = random.nextInt(10000);
         String saltedpass = password + String.valueOf(salt);
         String hashedpass = DigestUtils.sha256Hex(saltedpass);
-        
+
         ServerResponse.Builder response = ServerResponse.newBuilder();
         MySqlConnection database = new MySqlConnection();
         try {
@@ -73,10 +76,11 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
             response.setToken("Internal error");
             response.setResponseCode(0);
         }
-        
+
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
+
     
-    
+
 }

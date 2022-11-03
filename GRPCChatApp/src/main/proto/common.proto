@@ -18,3 +18,8 @@ message ServiceResponse {
     string response = 1;
     int32 response_code = 2;
 }
+
+message GetRequest {
+
+  string token = 1;
+}

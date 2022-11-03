@@ -10,8 +10,8 @@ option java_package = "com.chatapp.friends";
 
 service FriendManagingService {
 
-  rpc GetRequests(common.User) returns (stream common.User);
-  rpc GetFriends(common.User) returns (FriendList);
+  rpc GetRequests(common.GetRequest) returns (stream common.User);
+  rpc GetFriends(common.GetRequest) returns (FriendList);
   rpc SetFriendship(AnswerRequest) returns (common.ServiceResponse);
   rpc AddFriendship(FriendRequest) returns (common.ServiceResponse);
 }
@@ -42,13 +42,15 @@ message AnswerRequest {
     BLOCKED = 2;
   }
 
-  common.User user = 1;
+  string token = 1;
   common.User requester = 2;
   Answer answer = 3; 
 }
 
 message FriendRequest {
 
-  common.User user = 1;
+  string token = 1;
   string friend = 2;
 }
+
+
