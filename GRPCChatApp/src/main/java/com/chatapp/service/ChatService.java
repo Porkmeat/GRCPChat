@@ -15,7 +15,9 @@ import com.chatapp.database.MySqlConnection;
 import com.chatapp.grpcchatapp.JWToken;
 import com.chatapp.grpcchatapp.MessageData;
 import io.grpc.stub.StreamObserver;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,6 +26,12 @@ import java.util.logging.Logger;
  * @author maria
  */
 public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
+
+    private HashMap<Integer, StreamObserver<ChatMessage>> onlineClients;
+
+    public ChatService(HashMap<Integer, StreamObserver<ChatMessage>> onlineClients) {
+        this.onlineClients = onlineClients;
+    }
 
     @Override
     public void getMessages(GetChatRequest request, StreamObserver<MessageList> responseObserver) {
@@ -69,6 +77,17 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
             int friendId = request.getReciever().getUserId();
 
             MySqlConnection database = new MySqlConnection();
+
+            if (onlineClients.containsKey(friendId)) {
+                
+                ChatMessage.Builder chatMessage = ChatMessage.newBuilder();
+                chatMessage.setSenderId(userId)
+                            .setMessage(message)
+                            .setTimestamp(Instant.now().toString())
+                            .setSeen(false);
+                onlineClients.get(friendId).onNext(chatMessage.build());
+            }
+            
             try {
                 database.saveMsg(userId, friendId, message);
 
@@ -90,5 +109,13 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
     @Override
     public void receiveMessage(GetRequest request, StreamObserver<ChatMessage> responseObserver) {
 
+        JWToken token = new JWToken(request.getToken());
+        if (token.isValid()) {
+            int userId = token.getUserId();
+            if (!onlineClients.containsKey(userId)) {
+                System.out.println("added key " + userId);
+                onlineClients.put(userId, responseObserver);
+            }
+        }
     }
 }
