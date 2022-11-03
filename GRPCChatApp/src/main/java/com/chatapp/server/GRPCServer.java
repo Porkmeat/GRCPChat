@@ -4,28 +4,10 @@
  */
 package com.chatapp.server;
 
-import com.chatapp.service.ChatService;
-import com.chatapp.service.FriendManagementService;
-import com.chatapp.service.LoginService;
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
-import java.io.IOException;
-
 /**
  *
- * @author maria
+ * @author Mariano
  */
 public class GRPCServer {
-    
-    public static void main(String args[]) throws IOException, InterruptedException {
-        
-        Server server = ServerBuilder.forPort(8818).addService(new LoginService()).addService(new FriendManagementService()).addService(new ChatService()).build();
-        
-        server.start();
-        
-        System.out.println("Server started on port: " + server.getPort());
-        
-        server.awaitTermination();
-    }
     
 }
