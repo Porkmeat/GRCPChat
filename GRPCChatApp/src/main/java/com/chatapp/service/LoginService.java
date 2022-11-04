@@ -4,13 +4,19 @@
  */
 package com.chatapp.service;
 
+import com.chatapp.chat.ChatMessage;
 import com.chatapp.common.GetRequest;
+import com.chatapp.common.User;
 import com.chatapp.database.MySqlConnection;
+import com.chatapp.friends.UserFriend;
 import com.chatapp.grpcchatapp.JWToken;
 import com.chatapp.login.LoginRequest;
 import com.chatapp.login.LoginServiceGrpc;
 import com.chatapp.login.ServerResponse;
+import com.chatapp.status.StatusUpdate;
 import io.grpc.stub.StreamObserver;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,9 +28,66 @@ import org.apache.commons.codec.digest.DigestUtils;
  */
 public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
 
+    private final HashMap<Integer, StreamObserver<ChatMessage>> messageObservers;
+    private final HashMap<Integer, StreamObserver<UserFriend>> userObservers;
+    private final HashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
+
+    public LoginService(HashMap<Integer, StreamObserver<ChatMessage>> messageObservers,
+            HashMap<Integer, StreamObserver<UserFriend>> userObservers,
+            HashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
+
+        this.messageObservers = messageObservers;
+        this.userObservers = userObservers;
+        this.statusObservers = statusObservers;
+    }
+
     @Override
     public void logout(GetRequest request, StreamObserver<ServerResponse> responseObserver) {
+        JWToken token = new JWToken(request.getToken());
+        ServerResponse.Builder response = ServerResponse.newBuilder();
+        if (token.isValid()) {
+            String username = token.getUsername();
+            int userId = token.getUserId();
 
+            if (userObservers.containsKey(userId)) {
+                userObservers.get(userId).onCompleted();
+                userObservers.remove(userId);
+            }
+            if (messageObservers.containsKey(userId)) {
+                messageObservers.get(userId).onCompleted();
+                messageObservers.remove(userId);
+            }
+            if (statusObservers.containsKey(userId)) {
+                statusObservers.get(userId).onCompleted();
+                statusObservers.remove(userId);
+            }
+
+            MySqlConnection database = new MySqlConnection();
+            StatusUpdate statusUpdate = StatusUpdate.newBuilder()
+                    .setUser(User.newBuilder().setUsername(username).setUserId(userId))
+                    .setStatus(StatusUpdate.Status.OFFLINE).build();
+            
+            try {
+                ArrayList<Integer> friendList = database.getFriendList(userId);
+                for (int friend : friendList) {
+                    if (statusObservers.containsKey(friend)) {
+                        statusObservers.get(friend).onNext(statusUpdate);
+                    }
+                }
+                response.setToken("Successfully logged out");
+                response.setResponseCode(1);
+            } catch (Exception ex) {
+                Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
+                response.setToken("Internal error");
+                response.setResponseCode(0);
+            }
+            
+        } else {
+            response.setToken("Verification failed");
+            response.setResponseCode(0);
+        }
+        responseObserver.onNext(response.build());
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -80,7 +143,5 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
-
-    
 
 }

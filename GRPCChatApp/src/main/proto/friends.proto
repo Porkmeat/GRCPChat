@@ -10,14 +10,20 @@ option java_package = "com.chatapp.friends";
 
 service FriendManagingService {
 
-  rpc GetRequests(common.GetRequest) returns (stream common.User);
-  rpc GetFriends(common.GetRequest) returns (FriendList);
+  rpc RecieveUsers(common.GetRequest) returns (stream UserFriend);
+  rpc GetFriendsAndRequests(common.GetRequest) returns (common.ServiceResponse);
   rpc SetFriendship(AnswerRequest) returns (common.ServiceResponse);
   rpc AddFriendship(FriendRequest) returns (common.ServiceResponse);
 }
 
 
 message UserFriend {
+
+  enum Type {
+
+    FRIEND = 0;
+    REQUEST = 1;
+  }
 
   common.User user = 1;
   string alias = 2;
@@ -26,11 +32,8 @@ message UserFriend {
   int32 unseen_chats = 5;
   string timestamp = 6;
   bool is_sender = 7;
-}
-
-message FriendList {
-
-  repeated UserFriend friends = 1;
+  Type type = 8;
+  bool is_online = 9;
 }
 
 message AnswerRequest {

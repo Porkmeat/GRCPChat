@@ -27,10 +27,10 @@ import java.util.logging.Logger;
  */
 public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
 
-    private HashMap<Integer, StreamObserver<ChatMessage>> onlineClients;
+    private final HashMap<Integer, StreamObserver<ChatMessage>> messageObservers;
 
-    public ChatService(HashMap<Integer, StreamObserver<ChatMessage>> onlineClients) {
-        this.onlineClients = onlineClients;
+    public ChatService(HashMap<Integer, StreamObserver<ChatMessage>> messageObservers) {
+        this.messageObservers = messageObservers;
     }
 
     @Override
@@ -78,16 +78,16 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
 
             MySqlConnection database = new MySqlConnection();
 
-            if (onlineClients.containsKey(friendId)) {
-                
+            if (messageObservers.containsKey(friendId)) {
+
                 ChatMessage.Builder chatMessage = ChatMessage.newBuilder();
                 chatMessage.setSenderId(userId)
-                            .setMessage(message)
-                            .setTimestamp(Instant.now().toString())
-                            .setSeen(false);
-                onlineClients.get(friendId).onNext(chatMessage.build());
+                        .setMessage(message)
+                        .setTimestamp(Instant.now().toString())
+                        .setSeen(false);
+                messageObservers.get(friendId).onNext(chatMessage.build());
             }
-            
+
             try {
                 database.saveMsg(userId, friendId, message);
 
@@ -112,10 +112,8 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
         JWToken token = new JWToken(request.getToken());
         if (token.isValid()) {
             int userId = token.getUserId();
-            if (!onlineClients.containsKey(userId)) {
-                System.out.println("added key " + userId);
-                onlineClients.put(userId, responseObserver);
-            }
+            System.out.println("added key " + userId);
+            messageObservers.put(userId, responseObserver);
         }
     }
 }

@@ -10,15 +10,14 @@ import com.chatapp.common.User;
 import com.chatapp.database.MySqlConnection;
 import com.chatapp.friends.AnswerRequest;
 import com.chatapp.friends.AnswerRequest.Answer;
-import com.chatapp.friends.FriendList;
 import com.chatapp.friends.FriendManagingServiceGrpc;
 import com.chatapp.friends.FriendRequest;
 import com.chatapp.friends.UserFriend;
 import com.chatapp.grpcchatapp.FriendData;
 import com.chatapp.grpcchatapp.JWToken;
-import com.chatapp.grpcchatapp.UserData;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,37 +26,47 @@ import java.util.logging.Logger;
  * @author maria
  */
 public class FriendManagementService extends FriendManagingServiceGrpc.FriendManagingServiceImplBase {
-
+    
+    private final HashMap<Integer, StreamObserver<UserFriend>> userObservers;
+    
+    public FriendManagementService(HashMap<Integer, StreamObserver<UserFriend>> userObservers) {
+        this.userObservers = userObservers;
+    }
+    
     @Override
     public void setFriendship(AnswerRequest request, StreamObserver<ServiceResponse> responseObserver) {
         JWToken token = new JWToken(request.getToken());
         ServiceResponse.Builder response = ServiceResponse.newBuilder();
-
+        
         if (token.isValid()) {
             int userId = token.getUserId();
             int requesterId = request.getRequester().getUserId();
-
+            
             Answer answer = request.getAnswer();
             MySqlConnection database = new MySqlConnection();
-
+            
             try {
-
+                
                 switch (answer) {
-                    case ACCEPTED ->
-                        database.acceptRequest(userId, requesterId);
-
+                    case ACCEPTED -> {
+                        FriendData friend = database.acceptRequest(userId, requesterId);
+                        if (userObservers.containsKey(requesterId)) {
+                            userObservers.get(requesterId).onNext(generateUserFriend(friend));
+                        }
+                    }
+                    
                     case DENIED ->
                         database.denyRequest(userId, requesterId);
-
+                    
                     case BLOCKED ->
                         database.blockRequest(userId, requesterId);
                 }
-
+                
                 response.setResponse("Request " + answer.getValueDescriptor().getName());
                 response.setResponseCode(1);
-
+                
             } catch (Exception ex) {
-
+                
                 Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
                 response.setResponse("Internal error");
                 response.setResponseCode(0);
@@ -66,71 +75,49 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
             response.setResponse("Verification failed");
             response.setResponseCode(0);
         }
-
+        
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
-
+    
     @Override
-    public void getFriends(GetRequest request, StreamObserver<FriendList> responseObserver) {
+    public void getFriendsAndRequests(GetRequest request, StreamObserver<ServiceResponse> responseObserver) {
         JWToken token = new JWToken(request.getToken());
-        FriendList.Builder response = FriendList.newBuilder();
-
+        ServiceResponse.Builder response = ServiceResponse.newBuilder();
         if (token.isValid()) {
-
+            
             int userId = token.getUserId();
-            UserFriend.Builder friend = UserFriend.newBuilder();
             MySqlConnection database = new MySqlConnection();
-
+            
             try {
-                ArrayList<FriendData> results = database.fetchFriends(userId);
-                for (FriendData result : results) {
-
-                    friend.setUser(User.newBuilder()
-                            .setUsername(result.getUser().getUsername())
-                            .setUserId(result.getUser().getUserId()).build())
-                            .setAlias(result.getAlias())
-                            .setIsSender(result.isIsSender())
-                            .setLastMsg(result.getLastMsg())
-                            .setTimestamp(result.getTimestamp())
-                            .setUnseenChats(result.getUnseenChats());
-                    response.addFriends(friend.build());
-                    friend.clear();
+                ArrayList<FriendData> friends = database.fetchFriends(userId);
+                for (FriendData result : friends) {
+                    if (userObservers.containsKey(userId)) {
+                        userObservers.get(userId).onNext(generateUserFriend(result));
+                    }
                 }
-
+                response.setResponse("Friends and requests fetched").setResponseCode(1);
             } catch (Exception ex) {
                 Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
+                response.setResponse("Internal error").setResponseCode(0);
             }
+        } else {
+            response.setResponse("Verification failed").setResponseCode(0);
         }
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
-
+    
     @Override
-    public void getRequests(GetRequest request, StreamObserver<User> responseObserver) {
+    public void recieveUsers(GetRequest request, StreamObserver<UserFriend> responseObserver) {
         JWToken token = new JWToken(request.getToken());
         if (token.isValid()) {
-
             int userId = token.getUserId();
-            MySqlConnection database = new MySqlConnection();
-            User.Builder user = User.newBuilder();
-
-            try {
-                ArrayList<UserData> results = database.getRequests(userId);
-                for (UserData result : results) {
-                    System.out.println(result.getUsername());
-                    user.setUsername(result.getUsername());
-                    user.setUserId(result.getUserId());
-                    responseObserver.onNext(user.build());
-                    user.clear();
-                }
-            } catch (Exception ex) {
-                Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            System.out.println("added key " + userId);
+            userObservers.put(userId, responseObserver);
         }
-        responseObserver.onCompleted();
     }
-
+    
     @Override
     public void addFriendship(FriendRequest request, StreamObserver<ServiceResponse> responseObserver) {
         JWToken token = new JWToken(request.getToken());
@@ -139,19 +126,28 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
             int userId = token.getUserId();
             String username = token.getUsername();
             String friendName = request.getFriend();
-
+            
             MySqlConnection database = new MySqlConnection();
-
+            
             try {
                 int friendId = database.getUserId(friendName);
                 if (friendId > 0) {
                     database.addFriend(userId, username, friendId, friendName);
+                    
+                    if (userObservers.containsKey(friendId)) {
+                        UserFriend.Builder user = UserFriend.newBuilder();
+                        user.setUser(User.newBuilder().setUsername(username).setUserId(userId))
+                                .setType(UserFriend.Type.REQUEST);
+                        userObservers.get(friendId).onNext(user.build());
+                        System.out.println("online user notified");
+                    }
+                    
                     response.setResponse("Request sent to " + friendName);
                     response.setResponseCode(1);
                 } else {
                     response.setResponse("User " + friendName + " doesn't exist");
                     response.setResponseCode(0);
-
+                    
                 }
             } catch (Exception ex) {
                 Logger.getLogger(FriendManagementService.class
@@ -166,5 +162,20 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
-
+    
+    private UserFriend generateUserFriend(FriendData friend) {
+        UserFriend.Builder userFriend = UserFriend.newBuilder();
+        userFriend.setUser(User.newBuilder()
+                .setUsername(friend.getUser().getUsername())
+                .setUserId(friend.getUser().getUserId()).build())
+                .setAlias(friend.getAlias())
+                .setIsSender(friend.isIsSender())
+                .setLastMsg(friend.getLastMsg())
+                .setTimestamp(friend.getTimestamp())
+                .setUnseenChats(friend.getUnseenChats())
+                .setType(friend.getType())
+                .setIsOnline(userObservers.containsKey(friend.getUser().getUserId()));
+        return userFriend.build();
+    }
+    
 }

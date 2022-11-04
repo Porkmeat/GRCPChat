@@ -4,13 +4,15 @@
  */
 package com.chatapp.grpcchatapp;
 
+import com.chatapp.friends.UserFriend;
+
 
 /**
  *
  * @author Mariano
  */
 public class FriendData {
-
+    
     private UserData user;
     private String alias;
     private boolean isSender;
@@ -18,8 +20,10 @@ public class FriendData {
     private String profilePicture;
     private String lastMsg;
     private String timestamp;
+    private UserFriend.Type type;
+   
 
-    public FriendData(UserData user, String alias, boolean isSender, String profilePicture, String lastMsg, String timestamp, int unseenChats) {
+    public FriendData(UserData user, String alias, boolean isSender, String profilePicture, String lastMsg, String timestamp, int unseenChats, UserFriend.Type type) {
         this.user = user;
         this.alias = alias;
         this.isSender = isSender;
@@ -27,6 +31,7 @@ public class FriendData {
         this.profilePicture = profilePicture;
         this.lastMsg = lastMsg;
         this.timestamp = timestamp;
+        this.type = type;
     }
 
     public UserData getUser() {
@@ -84,6 +89,16 @@ public class FriendData {
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
+
+    public UserFriend.Type getType() {
+        return type;
+    }
+
+    public void setType(UserFriend.Type type) {
+        this.type = type;
+    }
+
+    
 
     
 

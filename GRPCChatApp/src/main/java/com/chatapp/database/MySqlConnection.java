@@ -4,6 +4,7 @@
  */
 package com.chatapp.database;
 
+import com.chatapp.friends.UserFriend;
 import com.chatapp.grpcchatapp.FriendData;
 import com.chatapp.grpcchatapp.MessageData;
 import com.chatapp.grpcchatapp.UserData;
@@ -150,24 +151,61 @@ public class MySqlConnection {
         try {
             connect();
             preparedStatement = connect
-                    .prepareStatement("SELECT  u.user_login, uc.contact_friend_id, uc.contact_alias,"
+                    .prepareStatement("SELECT  u.user_login,"
+                            + "uc.contact_friend_id,"
+                            + "uc.contact_alias,"
                             + "c.chat_user_sender,"
-                            + "c.last_message, DATE_FORMAT(c.last_message_time,'%Y-%m-%dT%H:%i:%s') "
+                            + "c.last_message,"
+                            + " DATE_FORMAT(c.last_message_time,'%Y-%m-%dT%H:%i:%s') "
                             + "AS last_message_time,"
-                            + "c.unseen_chats FROM user_contacts uc LEFT JOIN chat c USING (chat_uuid) "
+                            + "c.unseen_chats,"
+                            + "uc.contact_status "
+                            + "FROM user_contacts uc LEFT JOIN chat c USING (chat_uuid) "
                             + "INNER JOIN user u ON u.user_id = uc.contact_friend_id "
-                            + "WHERE uc.contact_user_id = ? AND uc.contact_status = 3;");
+                            + "WHERE uc.contact_user_id = ? AND (uc.contact_status = 3 OR uc.contact_status = 2);");
             preparedStatement.setInt(1, userid);
 
             resultSet = preparedStatement.executeQuery();
             
             while (resultSet.next()) {
+                
+                UserFriend.Type type = switch (resultSet.getInt(8)) {
+                    case 2 -> UserFriend.Type.REQUEST;
+                    case 3 -> UserFriend.Type.FRIEND;
+                    default -> UserFriend.Type.UNRECOGNIZED;
+                };
+                
                 friends.add(new FriendData(new UserData(resultSet.getString(1), resultSet.getInt(2))
                         , resultSet.getString(3), resultSet.getInt(2) == resultSet.getInt(4), "profilepic"
-                        , resultSet.getString(5), resultSet.getString(6), resultSet.getInt(7)));
+                        , resultSet.getString(5), resultSet.getString(6), resultSet.getInt(7), type));
             }
             
             return friends;            
+            
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            close();
+        }
+    }
+    
+    public ArrayList<Integer> getFriendList(int userId) throws Exception {
+
+        ArrayList<Integer> friendList = new ArrayList<>();
+        try {
+            connect();
+            preparedStatement = connect
+                    .prepareStatement("SELECT contact_friend_id FROM user_contacts WHERE contact_user_id = ? AND contact_status = 3;");
+            
+            preparedStatement.setInt(1, userId);
+            
+            resultSet = preparedStatement.executeQuery();
+            
+            while (resultSet.next()) {
+                friendList.add(resultSet.getInt(1));
+            }
+            return friendList;
+            
             
         } catch (Exception ex) {
             throw ex;
@@ -277,34 +315,36 @@ public class MySqlConnection {
     }
     
     
+//    next method is obsolete 
+    
+//    public ArrayList<UserData> getRequests(int userid) throws Exception {
+//        ArrayList<UserData> requests = new ArrayList<>();
+//        try {
+//            connect();
+//            preparedStatement = connect
+//                    .prepareStatement("SELECT contact_alias, contact_friend_id FROM user_contacts"
+//                            + " WHERE contact_user_id = ? AND contact_status = 2 ORDER BY contact_alias;");
+//            preparedStatement.setInt(1, userid);
+//
+//            resultSet = preparedStatement.executeQuery();
+//            
+//            while (resultSet.next()) {
+//                requests.add(new UserData(resultSet.getString(1),resultSet.getInt(2)));
+//            }
+//            return requests;
+//            
+//        } catch (Exception ex) {
+//            throw ex;
+//        } finally {
+//            close();
+//        }
+//    }
 
-    public ArrayList<UserData> getRequests(int userid) throws Exception {
-        ArrayList<UserData> requests = new ArrayList<>();
-        try {
-            connect();
-            preparedStatement = connect
-                    .prepareStatement("SELECT contact_alias, contact_friend_id FROM user_contacts"
-                            + " WHERE contact_user_id = ? AND contact_status = 2 ORDER BY contact_alias;");
-            preparedStatement.setInt(1, userid);
-
-            resultSet = preparedStatement.executeQuery();
-            
-            while (resultSet.next()) {
-                requests.add(new UserData(resultSet.getString(1),resultSet.getInt(2)));
-            }
-            return requests;
-            
-        } catch (Exception ex) {
-            throw ex;
-        } finally {
-            close();
-        }
-    }
-
-    public void acceptRequest(int userid, int requesterId) throws Exception {
+    public FriendData acceptRequest(int userid, int requesterId) throws Exception {
         try {
             connect();
             long chatUuid = generateChatUuid(userid, requesterId);
+            
             preparedStatement = connect
                     .prepareStatement("UPDATE user_contacts SET contact_status = 3 WHERE chat_uuid = "+chatUuid+";");
             preparedStatement.executeUpdate();
@@ -316,6 +356,30 @@ public class MySqlConnection {
             preparedStatement.setString(2,"");
             preparedStatement.executeUpdate();
             
+            preparedStatement = connect
+                    .prepareStatement("SELECT  u.user_login,"
+                            + "uc.contact_friend_id,"
+                            + "uc.contact_alias,"
+                            + "c.chat_user_sender,"
+                            + "c.last_message,"
+                            + " DATE_FORMAT(c.last_message_time,'%Y-%m-%dT%H:%i:%s') "
+                            + "AS last_message_time,"
+                            + "c.unseen_chats,"
+                            + "FROM user_contacts uc LEFT JOIN chat c USING (chat_uuid) "
+                            + "INNER JOIN user u ON u.user_id = uc.contact_friend_id "
+                            + "WHERE uc.contact_user_id = ? AND uc.contact_friend_id = ?;");
+            preparedStatement.setInt(1, userid);
+            preparedStatement.setInt(2, requesterId);
+
+            resultSet = preparedStatement.executeQuery();
+            
+            resultSet.next();
+            
+            FriendData friend = new FriendData(new UserData(resultSet.getString(1), resultSet.getInt(2))
+                        , resultSet.getString(3), resultSet.getInt(2) == resultSet.getInt(4), "profilepic"
+                        , resultSet.getString(5), resultSet.getString(6), resultSet.getInt(7), UserFriend.Type.FRIEND);
+
+            return friend;
         } catch (Exception ex) {
             throw ex;
         } finally {
