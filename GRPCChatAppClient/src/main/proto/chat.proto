@@ -10,35 +10,24 @@ option java_package = "com.chatapp.chat";
 
 service ChatService {
 
-  rpc ReceiveMessage(common.Empty) returns (stream ChatMessage);
-  rpc GetFriends(common.User) returns (FriendList);
-  rpc SendMessage(ChatMessage) returns (common.ServiceResponse);
-  rpc GetMessages(Chat) returns (MessageList);
+  rpc ReceiveMessage(common.GetRequest) returns (stream ChatMessage);
+  rpc SendMessage(SendMessageRequest) returns (common.ServiceResponse);
+  rpc GetMessages(GetChatRequest) returns (MessageList);
 }
 
+message SendMessageRequest {
 
-
-message UserFriend {
-
-  common.User user = 1;
-  string alias = 2;
-  optional bytes profile_picture = 3;
-  optional string last_msg = 4;
-  optional int32 unseen_chats = 5;
-  optional string timestamp = 6;
-  optional bool is_sender = 7;
-}
-
-message FriendList {
-
-  repeated UserFriend friends = 1;
+  string token = 1;
+  common.User reciever = 2;
+  string message = 3;
 }
 
 message ChatMessage {
 
-  Chat chat = 1;
+  int32 sender_id = 1;
   string message = 2;
   string timestamp = 3;
+  bool seen = 4;
 }
 
 message MessageList {
@@ -46,9 +35,9 @@ message MessageList {
   repeated ChatMessage messages = 1;
 }
 
-message Chat {
+message GetChatRequest {
 
-  common.User user = 1;
+  string token = 1;
   common.User friend = 2;
 }
 

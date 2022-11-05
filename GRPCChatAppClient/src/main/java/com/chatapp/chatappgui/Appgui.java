@@ -1,6 +1,6 @@
 package com.chatapp.chatappgui;
 
-import com.chatapp.grpcchatappclient.ChatAppClient;
+import com.chatapp.grpcchatappclient.GRPCChatAppClient;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +10,7 @@ import javafx.stage.Stage;
 public class Appgui extends Application {
     
     private static Scene scene;
-    private static ChatAppClient client;
+    private static GRPCChatAppClient client;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -32,7 +32,7 @@ public class Appgui extends Application {
 
 
     public static void main(String[] args) {
-        client = new ChatAppClient("localhost", 8818);
+        client = new GRPCChatAppClient("localhost", 8818);
         client.connect();
         launch(args);
         

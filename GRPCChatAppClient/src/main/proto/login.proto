@@ -10,7 +10,8 @@ option java_package = "com.chatapp.login";
 service LoginService {
 
   rpc Login(LoginRequest) returns (ServerResponse);
-  rpc Logout(common.Empty) returns (ServerResponse);
+  rpc Logout(common.GetRequest) returns (ServerResponse);
+  rpc CreateAccount(LoginRequest) returns (ServerResponse);
 }
 
 message LoginRequest {

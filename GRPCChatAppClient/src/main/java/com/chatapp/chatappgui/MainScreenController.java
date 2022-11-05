@@ -1,7 +1,7 @@
 package com.chatapp.chatappgui;
 
-import com.chatapp.grpcchatappclient.ChatAppClient;
 import com.chatapp.grpcchatappclient.FriendListener;
+import com.chatapp.grpcchatappclient.GRPCChatAppClient;
 import com.chatapp.grpcchatappclient.MessageListener;
 import com.chatapp.grpcchatappclient.RequestListener;
 import com.chatapp.grpcchatappclient.StatusListener;
@@ -44,7 +44,7 @@ import javafx.util.Duration;
 
 public class MainScreenController implements StatusListener, MessageListener, RequestListener, FriendListener {
 
-    private ChatAppClient client;
+    private GRPCChatAppClient client;
     private String currentChat;
     private final HashMap<String, ListView> activeChats = new HashMap<>();
     private ListView<Chat> activeChat;
@@ -79,7 +79,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     @FXML
     private TabPane mainTabPane;
 
-    public void setupController(ChatAppClient client, String username) throws IOException {
+    public void setupController(GRPCChatAppClient client, String username) throws IOException {
         mainusername.setText(username);
         mainuserimg.setStyle(username);
         this.client = client;

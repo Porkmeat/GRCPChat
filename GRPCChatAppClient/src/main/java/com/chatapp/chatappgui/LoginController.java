@@ -1,6 +1,6 @@
 package com.chatapp.chatappgui;
 
-import com.chatapp.grpcchatappclient.ChatAppClient;
+import com.chatapp.grpcchatappclient.GRPCChatAppClient;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,7 +21,7 @@ public class LoginController {
     /**
      * Initializes the controller class.
      */
-    private ChatAppClient client;
+    private GRPCChatAppClient client;
     private Stage stage;
     private Scene scene;
 
@@ -74,7 +74,7 @@ public class LoginController {
         }
     }
 
-    public void setClient(ChatAppClient client) {
+    public void setClient(GRPCChatAppClient client) {
         this.client = client;
     }
 

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "common.proto";
+
+package chat;
+
+option java_multiple_files = true;
+option java_package = "com.chatapp.status";
+
+
+service StatusService {
+
+  rpc ReceiveStatus(common.GetRequest) returns (stream StatusUpdate);
+}
+
+
+message StatusUpdate {
+
+enum Status {
+  ONLINE = 0;
+  OFFLINE = 1;
+}
+  common.User user = 1;
+  Status status = 2;
+}
+
+
