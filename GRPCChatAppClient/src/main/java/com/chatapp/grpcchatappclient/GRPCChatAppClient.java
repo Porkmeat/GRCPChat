@@ -12,6 +12,7 @@ import com.chatapp.callbacks.StatusCallback;
 import com.chatapp.chat.ChatServiceGrpc;
 import com.chatapp.chat.GetChatRequest;
 import com.chatapp.chat.SendMessageRequest;
+import com.chatapp.chatappgui.Friend;
 import com.chatapp.common.GetRequest;
 import com.chatapp.common.User;
 import com.chatapp.friends.AnswerRequest;
@@ -40,7 +41,6 @@ public class GRPCChatAppClient {
     private String tempdir;
     private final ArrayList<StatusListener> statusListeners = new ArrayList<>();
     private final ArrayList<MessageListener> messageListeners = new ArrayList<>();
-    private final ArrayList<RequestListener> requestListeners = new ArrayList<>();
     private final ArrayList<FriendListener> friendListeners = new ArrayList<>();
     private LoginServiceGrpc.LoginServiceBlockingStub loginBlockingStub;
     private StatusServiceGrpc.StatusServiceStub statusStub;
@@ -88,6 +88,7 @@ public class GRPCChatAppClient {
         try {
             ServerResponse response = loginBlockingStub.logout(request);
             if (response.getResponseCode() == 1) {
+                JWToken = "";
                 System.out.println("Logout successful");
             } else {
                 System.out.println("Logout failed");
@@ -103,11 +104,7 @@ public class GRPCChatAppClient {
         LoginRequest request = LoginRequest.newBuilder().setUsername(username).setPassword(password).build();
         try {
             ServerResponse response = loginBlockingStub.login(request);
-            if (response.getResponseCode() == 1) {
-                return login(username, password);
-            } else {
-                return false;
-            }
+            return response.getResponseCode() == 1;
         } catch (StatusRuntimeException e) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.WARNING, "RPC failed: {0}", e.getStatus());
             return false;
@@ -118,9 +115,9 @@ public class GRPCChatAppClient {
         GetRequest request = GetRequest.newBuilder().setToken(JWToken).build();
 
         try {
-            chatStub.receiveMessage(request, new NewMessageCallback());
-            statusStub.receiveStatus(request, new StatusCallback());
-            friendStub.recieveUsers(request, new FriendCallback());
+            chatStub.receiveMessage(request, new NewMessageCallback(messageListeners));
+            statusStub.receiveStatus(request, new StatusCallback(statusListeners));
+            friendStub.recieveUsers(request, new FriendCallback(friendListeners));
             return true;
         } catch (StatusRuntimeException e) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.WARNING, "RPC failed: {0}", e.getStatus());
@@ -139,10 +136,10 @@ public class GRPCChatAppClient {
         }
     }
 
-    public void respondToRequest(String requester, int requesterId, int response) {
+    public void respondToRequest(Friend requester, int response) {
 
         AnswerRequest.Builder request = AnswerRequest.newBuilder().setToken(JWToken)
-                .setRequester(User.newBuilder().setUserId(requesterId).setUsername(requester));
+                .setRequester(User.newBuilder().setUserId(requester.getUserId()).setUsername(requester.getUsername()));
 
         switch (response) {
             case 1 ->
@@ -181,7 +178,7 @@ public class GRPCChatAppClient {
                 .setFriend(User.newBuilder().setUserId(friendId).setUsername(friendLogin).build()).build();
 
         try {
-            chatStub.getMessages(request, new GetMessagesCallback());
+            chatStub.getMessages(request, new GetMessagesCallback(messageListeners));
         } catch (StatusRuntimeException e) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.WARNING, "RPC failed: {0}", e.getStatus());
         }
@@ -207,14 +204,6 @@ public class GRPCChatAppClient {
 
     public void removeStatusListener(StatusListener listener) {
         statusListeners.remove(listener);
-    }
-
-    public void addRequestListener(RequestListener listener) {
-        requestListeners.add(listener);
-    }
-
-    public void removeRequestListener(RequestListener listener) {
-        requestListeners.remove(listener);
     }
 
     public void addMessageListener(MessageListener listener) {

@@ -19,7 +19,7 @@ public class ServiceResponseCallback implements  StreamObserver<ServiceResponse>
   @Override
   public void onNext(ServiceResponse value) {
       if (value.getResponseCode() == 1) {
-          Logger.getLogger(ServiceResponseCallback.class.getName()).info("Message sent");
+          Logger.getLogger(ServiceResponseCallback.class.getName()).info("Request successful");
       } else {
           Logger.getLogger(ServiceResponseCallback.class.getName()).info("Error occurred");
       }

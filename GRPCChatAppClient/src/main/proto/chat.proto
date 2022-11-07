@@ -32,7 +32,8 @@ message ChatMessage {
 
 message MessageList {
 
-  repeated ChatMessage messages = 1;
+  int32 friend_id = 1;
+  repeated ChatMessage messages = 2;
 }
 
 message GetChatRequest {

@@ -59,17 +59,13 @@ public class LoginController {
         String user = newUsernameField.getText();
         String pass = newUserPasswordField.getText();
         if (user.equals(newUserPasswordConfirmField.getText())) {
-            try {
-                if (client.createUser(user, pass)) {
-                    System.out.println("Account created!");
-                    usernameField.setText(user);
-                    passwordField.setText(pass);
-                    login();
-                } else {
-                    System.out.println("Failed!");
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+            if (client.createUser(user, pass)) {
+                System.out.println("Account created!");
+                usernameField.setText(user);
+                passwordField.setText(pass);
+                login();
+            } else {
+                System.out.println("Failed!");
             }
         }
     }

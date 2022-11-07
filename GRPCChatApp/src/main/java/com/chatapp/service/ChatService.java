@@ -37,10 +37,12 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
     public void getMessages(GetChatRequest request, StreamObserver<MessageList> responseObserver) {
         JWToken token = new JWToken(request.getToken());
         MessageList.Builder response = MessageList.newBuilder();
-
+        
         if (token.isValid()) {
             int userId = token.getUserId();
             int friendId = request.getFriend().getUserId();
+            
+            response.setFriendId(friendId);
 
             ChatMessage.Builder chatMessage = ChatMessage.newBuilder();
 

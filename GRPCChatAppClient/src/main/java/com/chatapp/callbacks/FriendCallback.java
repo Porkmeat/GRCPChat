@@ -4,19 +4,50 @@
  */
 package com.chatapp.callbacks;
 
+import com.chatapp.chatappgui.Friend;
 import com.chatapp.friends.UserFriend;
+import com.chatapp.grpcchatappclient.FriendListener;
 import io.grpc.stub.StreamObserver;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
  *
  * @author Mariano
  */
-public class FriendCallback implements StreamObserver<UserFriend>{
+public class FriendCallback implements StreamObserver<UserFriend> {
+
+    private final ArrayList<FriendListener> friendListeners;
+
+    public FriendCallback(ArrayList<FriendListener> friendListeners) {
+        this.friendListeners = friendListeners;
+    }
 
     @Override
-    public void onNext(UserFriend v) {
-        // implement new message get
+    public void onNext(UserFriend user) {
+        Instant timestampUTC = Instant.parse(user.getTimestamp() + "Z");
+        LocalDateTime localTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        var friend = new Friend(user.getUser().getUsername(), user.getUser().getUserId(),
+                user.getAlias(), user.getIsSender(), user.getUnseenChats(), user.getLastMsg(), localTime);
+
+        switch (user.getType()) {
+            case FRIEND -> {
+                for (FriendListener listener : friendListeners) {
+                    listener.addChat(friend);
+                }
+            }
+            case REQUEST -> {
+                for (FriendListener listener : friendListeners) {
+                    listener.request(friend);
+                }
+            }
+            default ->
+                Logger.getLogger(FriendCallback.class.getName()).info("Error occurred");
+        }
     }
 
     @Override
@@ -28,5 +59,5 @@ public class FriendCallback implements StreamObserver<UserFriend>{
     public void onCompleted() {
         Logger.getLogger(FriendCallback.class.getName()).info("Stream Ended");
     }
-    
+
 }

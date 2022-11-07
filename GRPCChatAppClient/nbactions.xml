@@ -10,7 +10,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:3.0.0:exec</goal>
             </goals>
             <properties>
-                <exec.vmArgs>-Dos.detected.name=windows -Dos.detected.arch=x86_64 -Dos.detected.classifier=windows-x86_64 --module-path C:\Users\maria\OneDrive\Documentos\Java\javafx-sdk-19\lib --add-modules javafx.controls,javafx.fxml</exec.vmArgs>
+                <exec.vmArgs>-Dos.detected.name=windows -Dos.detected.arch=x86_64 -Dos.detected.classifier=windows-x86_64 --module-path D:\Documents\Java\javafx-sdk-19\lib --add-modules javafx.controls,javafx.fxml</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.appArgs></exec.appArgs>
                 <exec.mainClass>com.chatapp.chatappgui.Appgui</exec.mainClass>
@@ -27,7 +27,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:3.0.0:exec</goal>
             </goals>
             <properties>
-                <exec.vmArgs>-Dos.detected.name=windows -Dos.detected.arch=x86_64 -Dos.detected.classifier=windows-x86_64 --module-path C:\Users\maria\OneDrive\Documentos\Java\javafx-sdk-19\lib --add-modules javafx.controls,javafx.fxml -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
+                <exec.vmArgs>-Dos.detected.name=windows -Dos.detected.arch=x86_64 -Dos.detected.classifier=windows-x86_64 --module-path D:\Documents\Java\javafx-sdk-19\lib --add-modules javafx.controls,javafx.fxml -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.appArgs></exec.appArgs>
                 <exec.mainClass>com.chatapp.chatappgui.Appgui</exec.mainClass>
@@ -45,7 +45,7 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:3.0.0:exec</goal>
             </goals>
             <properties>
-                <exec.vmArgs>-Dos.detected.name=windows -Dos.detected.arch=x86_64 -Dos.detected.classifier=windows-x86_64 --module-path C:\Users\maria\OneDrive\Documentos\Java\javafx-sdk-19\lib --add-modules javafx.controls,javafx.fxml</exec.vmArgs>
+                <exec.vmArgs>-Dos.detected.name=windows -Dos.detected.arch=x86_64 -Dos.detected.classifier=windows-x86_64 --module-path D:\Documents\Java\javafx-sdk-19\lib --add-modules javafx.controls,javafx.fxml</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.mainClass>com.chatapp.chatappgui.Appgui</exec.mainClass>
                 <exec.executable>java</exec.executable>

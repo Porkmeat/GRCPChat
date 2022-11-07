@@ -4,10 +4,12 @@
  */
 package com.chatapp.grpcchatappclient;
 
+import com.chatapp.chatappgui.Friend;
+
 /**
  *
  * @author Mariano
  */
 public interface RequestListener {
-    public void request(String fromUser);
+    public void request(Friend fromUser);
 }

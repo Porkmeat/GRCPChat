@@ -12,4 +12,5 @@ import com.chatapp.chatappgui.Friend;
  */
 public interface FriendListener {
     public void addChat(Friend friend);
+    public void request(Friend fromUser);
 }

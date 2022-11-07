@@ -8,8 +8,6 @@ import com.chatapp.grpcchatappclient.StatusListener;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -45,10 +43,10 @@ import javafx.util.Duration;
 public class MainScreenController implements StatusListener, MessageListener, RequestListener, FriendListener {
 
     private GRPCChatAppClient client;
-    private String currentChat;
-    private final HashMap<String, ListView> activeChats = new HashMap<>();
+    private int currentChat;
+    private final HashMap<Integer, ListView> activeChats = new HashMap<>();
     private ListView<Chat> activeChat;
-    private String requester;
+    private Friend requester;
 
     @FXML
     private Circle mainuserimg;
@@ -59,7 +57,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     @FXML
     private ListView<Friend> userlist;
     @FXML
-    private ListView<String> requestlist;
+    private ListView<Friend> requestlist;
     @FXML
     private Label mainusername;
     @FXML
@@ -85,41 +83,33 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client = client;
         this.client.addStatusListener(this);
         this.client.addMessageListener(this);
-        this.client.addRequestListener(this);
         this.client.addFriendListener(this);
-        
-        
+        this.client.requestStreams();
+
         ObservableList<Friend> friends = FXCollections.observableArrayList(Friend.extractor());
         userlist.setCellFactory((ListView<Friend> userlist1) -> new CustomListCell());
         userlist.setItems(friends);
-        
-//        this.client.fetchRequests();
-//        this.client.fetchFriends();
-        
 
         userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {
             @Override
             public void changed(ObservableValue<? extends Friend> ov, Friend t, Friend t1) {
                 if (t1 != null) {
-                    currentChat = userlist.getSelectionModel().getSelectedItem().getUsername();
+                    String friendUsername = userlist.getSelectionModel().getSelectedItem().getUsername();
+                    currentChat = userlist.getSelectionModel().getSelectedItem().getUserId();
                     if (!activeChats.containsKey(currentChat)) {
                         ListView<Chat> newChat = new ListView<>();
                         newChat.setCellFactory((ListView<Chat> newChat1) -> new ChatListCell());
                         activeChats.put(currentChat, newChat);
+                        client.fetchMessages(friendUsername, currentChat);
 
-                        try {
-                            client.fetchMessages(currentChat);
-                        } catch (IOException ex) {
-                            Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
-                        }
                     }
-                    if (mainchatusername.getText() != null && !mainchatusername.getText().equals(currentChat)) {
+                    if (mainchatusername.getText() != null && !mainchatusername.getText().equals(friendUsername)) {
 
                         Platform.runLater(() -> {
                             activeChat = activeChats.get(currentChat);
                             chatwindow.setContent(activeChat);
                             autoScroll();
-                            mainchatusername.setText(currentChat);
+                            mainchatusername.setText(friendUsername);
 
                         });
                         if (!chatscreen.isVisible()) {
@@ -132,9 +122,9 @@ public class MainScreenController implements StatusListener, MessageListener, Re
             }
         });
 
-        requestlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+        requestlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {
             @Override
-            public void changed(ObservableValue<? extends String> ov, String t, String t1) {
+            public void changed(ObservableValue<? extends Friend> ov, Friend t, Friend t1) {
                 requester = requestlist.getSelectionModel().getSelectedItem();
                 System.out.println(requestlist.getItems().toString());
                 if (requester != null && requestButtons.isDisable()) {
@@ -144,6 +134,8 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         });
 
         chatinput.addEventFilter(KeyEvent.KEY_PRESSED, new EnterKeyHandler());
+
+        this.client.getFriendsAndRequests();
     }
 
     public void logoff(Stage stage) {
@@ -153,21 +145,16 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         alert.setContentText("Are you sure you want to log out?");
 
         if (alert.showAndWait().get() == ButtonType.OK) {
-            try {
-                client.logoff();
-                System.out.println("You logged out!");
-                Platform.runLater(() -> {
-                    stage.close();
-                });
-            } catch (IOException ex) {
-                Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            client.logoff();
+            System.out.println("You logged out!");
+            Platform.runLater(() -> {
+                stage.close();
+            });
         }
     }
 
     @Override
     public void online(String username) {
-
         for (Friend friend : userlist.getItems()) {
             if (friend.getUsername().equals(username)) {
                 friend.setIsOnline(true);
@@ -177,7 +164,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     @Override
     public void offline(String username) {
-        
+
         for (Friend friend : userlist.getItems()) {
             if (friend.getUsername().equals(username)) {
                 friend.setIsOnline(false);
@@ -234,7 +221,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 userlist.getItems().add(0, friend);
                 userlist.getSelectionModel().clearAndSelect(0);
             });
-            client.msg(currentChat, message);
+            client.msg("", currentChat, message);
             Platform.runLater(() -> {
                 chatinput.clear();
             });
@@ -242,10 +229,10 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @Override
-    public void messageGet(String fromUser, Chat message) {
+    public void messageGet(int fromUser, Chat message) {
 
         for (Friend friend : userlist.getItems()) {
-            if (friend.getUsername().equals(fromUser)) {
+            if (friend.getUserId() == fromUser) {
                 Platform.runLater(() -> {
                     boolean isSelected = userlist.getSelectionModel().getSelectedItem().equals(friend);
                     userlist.getItems().remove(friend);
@@ -298,7 +285,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @Override
-    public void request(String fromUser) {
+    public void request(Friend fromUser) {
         if (requestTab.isDisabled()) {
             requestTab.setDisable(false);
         }
@@ -309,50 +296,38 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     @FXML
     public void acceptRequest() {
-        try {
-            client.respondToRequest(requester, 1);
-            System.out.println("Added friend " + requester);
-            Platform.runLater(() -> {
-                if (requestlist.getItems().remove(requester)) {
-                    requester = null;
-                }
-            });
-            closeRequestTab();
-        } catch (IOException ex) {
-            Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        client.respondToRequest(requester, 1);
+        System.out.println("Added friend " + requester.getUsername());
+        Platform.runLater(() -> {
+            if (requestlist.getItems().remove(requester)) {
+                requester = null;
+            }
+        });
+        closeRequestTab();
     }
 
     @FXML
     public void denyRequest() {
-        try {
-            client.respondToRequest(requester, 2);
-            System.out.println("Request denied: " + requester);
-            Platform.runLater(() -> {
-                if (requestlist.getItems().remove(requester)) {
-                    requester = null;
-                }
-            });
-            closeRequestTab();
-        } catch (IOException ex) {
-            Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        client.respondToRequest(requester, 2);
+        System.out.println("Request denied: " + requester.getUsername());
+        Platform.runLater(() -> {
+            if (requestlist.getItems().remove(requester)) {
+                requester = null;
+            }
+        });
+        closeRequestTab();
     }
 
     @FXML
     public void blockRequest() {
-        try {
-            client.respondToRequest(requester, 3);
-            System.out.println("Blocked user " + requester);
-            Platform.runLater(() -> {
-                if (requestlist.getItems().remove(requester)) {
-                    requester = null;
-                }
-            });
-            closeRequestTab();
-        } catch (IOException ex) {
-            Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        client.respondToRequest(requester, 3);
+        System.out.println("Blocked user " + requester.getUsername());
+        Platform.runLater(() -> {
+            if (requestlist.getItems().remove(requester)) {
+                requester = null;
+            }
+        });
+        closeRequestTab();
     }
 
     private void closeRequestTab() {
@@ -375,7 +350,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @Override
-    public void loadMessages(String fromUser, ObservableList messages) {
+    public void loadMessages(int fromUser, ObservableList messages) {
         ListView<Chat> chatWithUser = activeChats.get(fromUser);
 
         Platform.runLater(() -> {

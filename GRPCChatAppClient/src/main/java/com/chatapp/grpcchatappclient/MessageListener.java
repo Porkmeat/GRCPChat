@@ -12,6 +12,6 @@ import javafx.collections.ObservableList;
  * @author Mariano
  */
 public interface MessageListener {
-    public void messageGet (String fromUser, Chat message);
-    public void loadMessages (String fromUser, ObservableList messages);
+    public void messageGet (int fromUser, Chat message);
+    public void loadMessages (int fromUser, ObservableList messages);
 }

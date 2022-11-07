@@ -4,23 +4,47 @@
  */
 package com.chatapp.callbacks;
 
+import com.chatapp.grpcchatappclient.StatusListener;
 import com.chatapp.status.StatusUpdate;
 import io.grpc.stub.StreamObserver;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
  *
  * @author Mariano
  */
-public class StatusCallback implements StreamObserver<StatusUpdate>{
+public class StatusCallback implements StreamObserver<StatusUpdate> {
 
-    @Override
-    public void onNext(StatusUpdate v) {
-        // implement new message get
+    private final ArrayList<StatusListener> statusListeners;
+
+    public StatusCallback(ArrayList<StatusListener> statusListeners) {
+        this.statusListeners = statusListeners;
     }
 
     @Override
-    public void onError(Throwable thrwbl) {
+    public void onNext(StatusUpdate statusUpdate) {
+        switch (statusUpdate.getStatus()) {
+
+            case ONLINE -> {
+                for (StatusListener listener : statusListeners) {
+                    listener.online(statusUpdate.getUser().getUsername());
+                }
+            }
+            case OFFLINE -> {
+                for (StatusListener listener : statusListeners) {
+                    listener.offline(statusUpdate.getUser().getUsername());
+                }
+            }
+
+            default ->
+                Logger.getLogger(StatusCallback.class.getName()).info("Error occurred");
+        }
+    }
+
+    @Override
+    public void onError(Throwable thrwbl
+    ) {
         Logger.getLogger(StatusCallback.class.getName()).info("Error occurred");
     }
 
@@ -28,5 +52,5 @@ public class StatusCallback implements StreamObserver<StatusUpdate>{
     public void onCompleted() {
         Logger.getLogger(StatusCallback.class.getName()).info("Stream Ended");
     }
-    
+
 }

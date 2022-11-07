@@ -17,6 +17,7 @@ import javafx.util.Callback;
 public class Friend {
 
     private String username;
+    private int userId;
     private String alias;
     private boolean friendIsSender;
     private int unseenChats;
@@ -25,8 +26,9 @@ public class Friend {
     private LocalDateTime timestamp;
     public final BooleanProperty isOnline = new SimpleBooleanProperty();
 
-    public Friend(String username, String alias, boolean friendIsSender, int unseenChats, String lastMsg, LocalDateTime timestamp) {
+    public Friend(String username, int userId, String alias, boolean friendIsSender, int unseenChats, String lastMsg, LocalDateTime timestamp) {
         this.username = username;
+        this.userId = userId;
         this.alias = alias;
         this.friendIsSender = friendIsSender;
         this.unseenChats = unseenChats;
@@ -46,6 +48,14 @@ public class Friend {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getAlias() {
