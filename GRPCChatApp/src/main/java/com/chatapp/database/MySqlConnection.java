@@ -364,7 +364,7 @@ public class MySqlConnection {
                             + "c.last_message,"
                             + " DATE_FORMAT(c.last_message_time,'%Y-%m-%dT%H:%i:%s') "
                             + "AS last_message_time,"
-                            + "c.unseen_chats,"
+                            + "c.unseen_chats "
                             + "FROM user_contacts uc LEFT JOIN chat c USING (chat_uuid) "
                             + "INNER JOIN user u ON u.user_id = uc.contact_friend_id "
                             + "WHERE uc.contact_user_id = ? AND uc.contact_friend_id = ?;");

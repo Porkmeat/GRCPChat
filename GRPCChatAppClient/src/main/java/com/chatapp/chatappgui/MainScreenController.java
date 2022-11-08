@@ -280,7 +280,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     private void autoScroll() {
         if (activeChat != null) {
-            activeChat.scrollTo(activeChat.getItems().size() - 1);
+            activeChat.scrollTo(activeChat.getItems().size());
         }
     }
 

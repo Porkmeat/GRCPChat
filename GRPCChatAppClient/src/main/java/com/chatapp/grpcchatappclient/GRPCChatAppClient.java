@@ -103,7 +103,7 @@ public class GRPCChatAppClient {
 
         LoginRequest request = LoginRequest.newBuilder().setUsername(username).setPassword(password).build();
         try {
-            ServerResponse response = loginBlockingStub.login(request);
+            ServerResponse response = loginBlockingStub.createAccount(request);
             return response.getResponseCode() == 1;
         } catch (StatusRuntimeException e) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.WARNING, "RPC failed: {0}", e.getStatus());

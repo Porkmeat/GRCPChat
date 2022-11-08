@@ -28,14 +28,15 @@ public class FriendCallback implements StreamObserver<UserFriend> {
 
     @Override
     public void onNext(UserFriend user) {
-        Instant timestampUTC = Instant.parse(user.getTimestamp() + "Z");
-        LocalDateTime localTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
 
         var friend = new Friend(user.getUser().getUsername(), user.getUser().getUserId(),
-                user.getAlias(), user.getIsSender(), user.getUnseenChats(), user.getLastMsg(), localTime);
+                user.getAlias(), user.getIsSender(), user.getUnseenChats(), user.getLastMsg(), LocalDateTime.now());
 
         switch (user.getType()) {
             case FRIEND -> {
+                Instant timestampUTC = Instant.parse(user.getTimestamp() + "Z");
+                LocalDateTime localTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
+                friend.setTimestamp(localTime);
                 for (FriendListener listener : friendListeners) {
                     listener.addChat(friend);
                 }
@@ -51,8 +52,8 @@ public class FriendCallback implements StreamObserver<UserFriend> {
     }
 
     @Override
-    public void onError(Throwable thrwbl) {
-        Logger.getLogger(FriendCallback.class.getName()).info("Error occurred");
+    public void onError(Throwable error) {
+        Logger.getLogger(FriendCallback.class.getName()).info(error.getCause().toString());
     }
 
     @Override

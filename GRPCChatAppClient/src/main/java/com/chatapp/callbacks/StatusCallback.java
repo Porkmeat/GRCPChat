@@ -43,9 +43,8 @@ public class StatusCallback implements StreamObserver<StatusUpdate> {
     }
 
     @Override
-    public void onError(Throwable thrwbl
-    ) {
-        Logger.getLogger(StatusCallback.class.getName()).info("Error occurred");
+    public void onError(Throwable error) {
+        Logger.getLogger(StatusCallback.class.getName()).info(error.getCause().toString());
     }
 
     @Override

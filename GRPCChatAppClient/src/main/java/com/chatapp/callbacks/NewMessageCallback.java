@@ -28,7 +28,7 @@ public class NewMessageCallback implements StreamObserver<ChatMessage> {
 
     @Override
     public void onNext(ChatMessage newChat) {
-        Instant timestampUTC = Instant.parse(newChat.getTimestamp() + "Z");
+        Instant timestampUTC = Instant.parse(newChat.getTimestamp());
         LocalDateTime messageLocalTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
 
         var chat = new Chat(newChat.getMessage(), newChat.getSeen(), messageLocalTime);
@@ -39,8 +39,8 @@ public class NewMessageCallback implements StreamObserver<ChatMessage> {
     }
 
     @Override
-    public void onError(Throwable thrwbl) {
-        Logger.getLogger(NewMessageCallback.class.getName()).info("Error occurred");
+    public void onError(Throwable error) {
+        Logger.getLogger(NewMessageCallback.class.getName()).info(error.getCause().toString());
     }
 
     @Override

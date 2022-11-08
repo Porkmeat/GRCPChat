@@ -80,15 +80,7 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
 
             MySqlConnection database = new MySqlConnection();
 
-            if (messageObservers.containsKey(friendId)) {
-
-                ChatMessage.Builder chatMessage = ChatMessage.newBuilder();
-                chatMessage.setSenderId(userId)
-                        .setMessage(message)
-                        .setTimestamp(Instant.now().toString())
-                        .setSeen(false);
-                messageObservers.get(friendId).onNext(chatMessage.build());
-            }
+            sendMessageIfOnline(userId, friendId, message);
 
             try {
                 database.saveMsg(userId, friendId, message);
@@ -114,8 +106,20 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
         JWToken token = new JWToken(request.getToken());
         if (token.isValid()) {
             int userId = token.getUserId();
-            System.out.println("added key " + userId);
+            System.out.println("added chat key " + userId);
             messageObservers.put(userId, responseObserver);
         }
+    }
+    
+    private void sendMessageIfOnline (int userId, int friendId, String message) {
+        if (messageObservers.containsKey(friendId)) {
+
+                ChatMessage.Builder chatMessage = ChatMessage.newBuilder();
+                chatMessage.setSenderId(userId)
+                        .setMessage(message)
+                        .setTimestamp(Instant.now().toString())
+                        .setSeen(false);
+                messageObservers.get(friendId).onNext(chatMessage.build());
+            }
     }
 }

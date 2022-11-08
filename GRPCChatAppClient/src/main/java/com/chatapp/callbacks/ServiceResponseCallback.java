@@ -26,8 +26,8 @@ public class ServiceResponseCallback implements  StreamObserver<ServiceResponse>
   }
 
   @Override
-  public void onError(Throwable cause) {
-    Logger.getLogger(ServiceResponseCallback.class.getName()).info("Error occurred");
+  public void onError(Throwable error) {
+    Logger.getLogger(ServiceResponseCallback.class.getName()).info(error.getCause().toString());
   }
 
   @Override

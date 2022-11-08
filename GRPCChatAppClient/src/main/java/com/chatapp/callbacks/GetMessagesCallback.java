@@ -21,7 +21,7 @@ import javafx.collections.ObservableList;
  * @author Mariano
  */
 public class GetMessagesCallback implements StreamObserver<MessageList> {
-    
+
     private final ArrayList<MessageListener> messageListeners;
 
     public GetMessagesCallback(ArrayList<MessageListener> messageListeners) {
@@ -30,35 +30,40 @@ public class GetMessagesCallback implements StreamObserver<MessageList> {
 
     @Override
     public void onNext(MessageList messageList) {
+        int senderId = messageList.getFriendId();
         var list = messageList.getMessagesList();
         ObservableList<Chat> chatList = FXCollections.observableArrayList();
         LocalDateTime lastMessageTime = null;
 
-        for (int i = 0; i < list.size()-1; i++) {
-            var newChat = list.get(i);
-            
-            Instant timestampUTC = Instant.parse(newChat.getTimestamp() + "Z");
-            LocalDateTime messageLocalTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
+        if (list.isEmpty()) {
+            chatList.add(new Chat(LocalDateTime.now()));
+        } else {
+            for (int i = 0; i < list.size(); i++) {
+                var newChat = list.get(i);
 
-            if (i == 0 || !messageLocalTime.toLocalDate().equals(lastMessageTime.toLocalDate())) {
-                chatList.add(new Chat(messageLocalTime));
+                Instant timestampUTC = Instant.parse(newChat.getTimestamp() + "Z");
+                LocalDateTime messageLocalTime = timestampUTC.atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+                if (i == 0 || !messageLocalTime.toLocalDate().equals(lastMessageTime.toLocalDate())) {
+                    chatList.add(new Chat(messageLocalTime));
+                }
+
+                lastMessageTime = messageLocalTime;
+
+                var chat = new Chat(newChat.getMessage(), newChat.getSenderId() != senderId, messageLocalTime);
+
+                chatList.add(chat);
             }
-
-            lastMessageTime = messageLocalTime;
-
-            var chat = new Chat(newChat.getMessage(), newChat.getSeen(), messageLocalTime);
-
-            chatList.add(chat);
         }
-        
+
         for (MessageListener listener : messageListeners) {
-            listener.loadMessages(messageList.getFriendId(), chatList);
+            listener.loadMessages(senderId, chatList);
         }
     }
 
     @Override
-    public void onError(Throwable thrwbl) {
-        Logger.getLogger(GetMessagesCallback.class.getName()).info("Error occurred");
+    public void onError(Throwable error) {
+        Logger.getLogger(GetMessagesCallback.class.getName()).info(error.getCause().toString());
     }
 
     @Override
