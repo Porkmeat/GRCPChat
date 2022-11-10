@@ -12,7 +12,7 @@ import com.chatapp.status.StatusServiceGrpc;
 import com.chatapp.status.StatusUpdate;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,9 +22,9 @@ import java.util.logging.Logger;
  */
 public class StatusService extends StatusServiceGrpc.StatusServiceImplBase {
 
-    private final HashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
+    private final ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
 
-    public StatusService(HashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
+    public StatusService(ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
         this.statusObservers = statusObservers;
     }
 

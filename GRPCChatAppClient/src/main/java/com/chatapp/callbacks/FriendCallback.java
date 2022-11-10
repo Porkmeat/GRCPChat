@@ -32,6 +32,8 @@ public class FriendCallback implements StreamObserver<UserFriend> {
         var friend = new Friend(user.getUser().getUsername(), user.getUser().getUserId(),
                 user.getAlias(), user.getIsSender(), user.getUnseenChats(), user.getLastMsg(), LocalDateTime.now());
 
+        friend.setIsOnline(user.getIsOnline());
+        
         switch (user.getType()) {
             case FRIEND -> {
                 Instant timestampUTC = Instant.parse(user.getTimestamp() + "Z");

@@ -368,8 +368,8 @@ public class MySqlConnection {
                             + "FROM user_contacts uc LEFT JOIN chat c USING (chat_uuid) "
                             + "INNER JOIN user u ON u.user_id = uc.contact_friend_id "
                             + "WHERE uc.contact_user_id = ? AND uc.contact_friend_id = ?;");
-            preparedStatement.setInt(1, userid);
-            preparedStatement.setInt(2, requesterId);
+            preparedStatement.setInt(1, requesterId);
+            preparedStatement.setInt(2, userid);
 
             resultSet = preparedStatement.executeQuery();
             

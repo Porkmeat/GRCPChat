@@ -15,9 +15,10 @@ import com.chatapp.friends.FriendRequest;
 import com.chatapp.friends.UserFriend;
 import com.chatapp.grpcchatapp.FriendData;
 import com.chatapp.grpcchatapp.JWToken;
+import com.chatapp.status.StatusUpdate;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,10 +28,12 @@ import java.util.logging.Logger;
  */
 public class FriendManagementService extends FriendManagingServiceGrpc.FriendManagingServiceImplBase {
 
-    private final HashMap<Integer, StreamObserver<UserFriend>> userObservers;
+    private final ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers;
+    private final ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
 
-    public FriendManagementService(HashMap<Integer, StreamObserver<UserFriend>> userObservers) {
+    public FriendManagementService(ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers, ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
         this.userObservers = userObservers;
+        this.statusObservers = statusObservers;
     }
 
     @Override
@@ -52,6 +55,13 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                         FriendData friend = database.acceptRequest(userId, requesterId);
                         if (userObservers.containsKey(requesterId)) {
                             userObservers.get(requesterId).onNext(generateUserFriend(friend));
+                        }
+                        if (statusObservers.containsKey(userId)) {
+                            StatusUpdate statusUpdate = StatusUpdate.newBuilder()
+                                    .setUser(User.newBuilder().setUsername(request.getRequester().getUsername())
+                                            .setUserId(requesterId))
+                                    .setStatus(StatusUpdate.Status.ONLINE).build();
+                            statusObservers.get(userId).onNext(statusUpdate);
                         }
                     }
 

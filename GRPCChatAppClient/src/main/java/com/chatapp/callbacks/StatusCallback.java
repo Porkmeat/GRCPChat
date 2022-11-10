@@ -27,6 +27,7 @@ public class StatusCallback implements StreamObserver<StatusUpdate> {
         switch (statusUpdate.getStatus()) {
 
             case ONLINE -> {
+                System.out.println(statusUpdate.getUser().getUsername() + " is online.");
                 for (StatusListener listener : statusListeners) {
                     listener.online(statusUpdate.getUser().getUsername());
                 }

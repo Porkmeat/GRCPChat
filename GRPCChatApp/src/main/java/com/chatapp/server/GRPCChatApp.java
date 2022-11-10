@@ -15,7 +15,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -24,14 +24,14 @@ import java.util.HashMap;
 public class GRPCChatApp {
     
     public static void main(String args[]) throws IOException, InterruptedException {
-        HashMap<Integer, StreamObserver<ChatMessage>> messageObservers = new HashMap<>();
-        HashMap<Integer, StreamObserver<UserFriend>> userObservers = new HashMap<>();
-        HashMap<Integer, StreamObserver<StatusUpdate>> statusObservers = new HashMap<>();
+        ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers = new ConcurrentHashMap<>();
+        ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers = new ConcurrentHashMap<>();
+        ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers = new ConcurrentHashMap<>();
         
         Server server = ServerBuilder.forPort(8818).addService(new LoginService(messageObservers,userObservers,statusObservers))
-                .addService(new FriendManagementService(userObservers))
+                .addService(new FriendManagementService(userObservers, statusObservers))
                 .addService(new ChatService(messageObservers))
-                .addService(new StatusService(statusObservers)).build();
+            .addService(new StatusService(statusObservers)).build();
         
         server.start();
         

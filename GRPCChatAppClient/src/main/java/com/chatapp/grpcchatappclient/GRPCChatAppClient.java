@@ -25,6 +25,7 @@ import com.chatapp.status.StatusServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -142,8 +143,14 @@ public class GRPCChatAppClient {
                 .setRequester(User.newBuilder().setUserId(requester.getUserId()).setUsername(requester.getUsername()));
 
         switch (response) {
-            case 1 ->
+            case 1 -> {
                 request.setAnswer(AnswerRequest.Answer.ACCEPTED);
+                for (FriendListener listener : friendListeners) {
+                    requester.setTimestamp(LocalDateTime.now());
+                    requester.setAlias(requester.getUsername());
+                    listener.addChat(requester);
+                }
+            }
 
             case 2 ->
                 request.setAnswer(AnswerRequest.Answer.DENIED);
@@ -163,7 +170,7 @@ public class GRPCChatAppClient {
     }
 
     public void addFriend(String friendname) {
-        
+
         FriendRequest request = FriendRequest.newBuilder().setToken(JWToken).setFriend(friendname).build();
         try {
             friendStub.addFriendship(request, new ServiceResponseCallback());

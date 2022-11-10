@@ -17,7 +17,7 @@ import com.chatapp.grpcchatapp.MessageData;
 import io.grpc.stub.StreamObserver;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,9 +27,9 @@ import java.util.logging.Logger;
  */
 public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
 
-    private final HashMap<Integer, StreamObserver<ChatMessage>> messageObservers;
+    private final ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers;
 
-    public ChatService(HashMap<Integer, StreamObserver<ChatMessage>> messageObservers) {
+    public ChatService(ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers) {
         this.messageObservers = messageObservers;
     }
 

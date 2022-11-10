@@ -121,12 +121,13 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 }
             }
         });
+        
+        requestlist.setCellFactory((ListView<Friend> requestlist1) -> new RequestListCell());
 
         requestlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {
             @Override
             public void changed(ObservableValue<? extends Friend> ov, Friend t, Friend t1) {
                 requester = requestlist.getSelectionModel().getSelectedItem();
-                System.out.println(requestlist.getItems().toString());
                 if (requester != null && requestButtons.isDisable()) {
                     requestButtons.setDisable(false);
                 }
@@ -234,7 +235,12 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         for (Friend friend : userlist.getItems()) {
             if (friend.getUserId() == fromUser) {
                 Platform.runLater(() -> {
-                    boolean isSelected = userlist.getSelectionModel().getSelectedItem().equals(friend);
+                    boolean isSelected;
+                    if (userlist.getSelectionModel().getSelectedItem() == null) {
+                        isSelected = false;
+                    } else {
+                        isSelected = userlist.getSelectionModel().getSelectedItem().equals(friend);
+                    }
                     userlist.getItems().remove(friend);
                     friend.setLastMsg(message.getMessage());
                     friend.setTimestamp(message.getTimestamp());

@@ -16,8 +16,8 @@ import com.chatapp.login.ServerResponse;
 import com.chatapp.status.StatusUpdate;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -28,13 +28,13 @@ import org.apache.commons.codec.digest.DigestUtils;
  */
 public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
 
-    private final HashMap<Integer, StreamObserver<ChatMessage>> messageObservers;
-    private final HashMap<Integer, StreamObserver<UserFriend>> userObservers;
-    private final HashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
+    private final ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers;
+    private final ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers;
+    private final ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
 
-    public LoginService(HashMap<Integer, StreamObserver<ChatMessage>> messageObservers,
-            HashMap<Integer, StreamObserver<UserFriend>> userObservers,
-            HashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
+    public LoginService(ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers,
+            ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers,
+            ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
 
         this.messageObservers = messageObservers;
         this.userObservers = userObservers;
