@@ -87,7 +87,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.requestStreams();
 
         ObservableList<Friend> friends = FXCollections.observableArrayList(Friend.extractor());
-        userlist.setCellFactory((ListView<Friend> userlist1) -> new CustomListCell());
+        userlist.setCellFactory((ListView<Friend> userlist1) -> new FriendListCell());
         userlist.setItems(friends);
 
         userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {

@@ -18,13 +18,13 @@ import javafx.scene.layout.AnchorPane;
  *
  * @author Mariano
  */
-public class CustomListCell extends ListCell<Friend> {
+public class FriendListCell extends ListCell<Friend> {
 
 
     private AnchorPane content;
     private FriendsfxmlController controller;
 
-    public CustomListCell() {
+    public FriendListCell() {
         super();
         {
             try {

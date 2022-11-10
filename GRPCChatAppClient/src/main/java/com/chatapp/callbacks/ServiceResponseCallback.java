@@ -21,7 +21,7 @@ public class ServiceResponseCallback implements  StreamObserver<ServiceResponse>
       if (value.getResponseCode() == 1) {
           Logger.getLogger(ServiceResponseCallback.class.getName()).info("Request successful");
       } else {
-          Logger.getLogger(ServiceResponseCallback.class.getName()).info("Error occurred");
+          Logger.getLogger(ServiceResponseCallback.class.getName()).info(value.getResponse());
       }
   }
 
