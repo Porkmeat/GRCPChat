@@ -176,7 +176,7 @@ public class MySqlConnection {
                 };
                 
                 friends.add(new FriendData(new UserData(resultSet.getString(1), resultSet.getInt(2))
-                        , resultSet.getString(3), resultSet.getInt(2) == resultSet.getInt(4), "profilepic"
+                        , resultSet.getString(3), resultSet.getInt(2) == resultSet.getInt(4), resultSet.getString(1) + ".jpg"
                         , resultSet.getString(5), resultSet.getString(6), resultSet.getInt(7), type));
             }
             

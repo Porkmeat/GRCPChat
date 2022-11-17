@@ -77,7 +77,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     @FXML
     private TabPane mainTabPane;
 
-    public void setupController(GRPCChatAppClient client, String username) throws IOException {
+    public void setupController(GRPCChatAppClient client, String username) {
         mainusername.setText(username);
         mainuserimg.setStyle(username);
         this.client = client;
@@ -87,7 +87,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.requestStreams();
 
         ObservableList<Friend> friends = FXCollections.observableArrayList(Friend.extractor());
-        userlist.setCellFactory((ListView<Friend> userlist1) -> new FriendListCell());
+        userlist.setCellFactory((ListView<Friend> userlist1) -> new FriendListCell(client.getTmpFolder()));
         userlist.setItems(friends);
 
         userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {
@@ -195,6 +195,11 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         }
 
         timeline.play();
+    }
+    
+    @FXML
+    public void uploadProfilePicture() {
+        client.uploadProfilePicture("");
     }
 
     @FXML

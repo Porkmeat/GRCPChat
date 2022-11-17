@@ -21,7 +21,7 @@ public class Friend {
     private String alias;
     private boolean friendIsSender;
     private int unseenChats;
-//    private String profilePicture;
+    private boolean profilePicture;
     private String lastMsg;
     private LocalDateTime timestamp;
     public final BooleanProperty isOnline = new SimpleBooleanProperty();
@@ -35,6 +35,7 @@ public class Friend {
         this.lastMsg = lastMsg;
         this.timestamp = timestamp;
         this.isOnline.set(false);
+        this.profilePicture = false;
 
     }
     
@@ -105,6 +106,16 @@ public class Friend {
     public void setIsOnline(boolean isOnline) {
         this.isOnline.set(isOnline);
     }
+
+    public boolean isProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(boolean profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+    
+    
     
     
 

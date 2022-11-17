@@ -23,8 +23,9 @@ public class FriendListCell extends ListCell<Friend> {
 
     private AnchorPane content;
     private FriendsfxmlController controller;
+    private final String tmpFolder;
 
-    public FriendListCell() {
+    public FriendListCell(String tmpFolder) {
         super();
         {
             try {
@@ -36,6 +37,7 @@ public class FriendListCell extends ListCell<Friend> {
             }
         }
         content = controller.getFriendcard();
+        this.tmpFolder = tmpFolder;
 
     }
 
@@ -51,6 +53,9 @@ public class FriendListCell extends ListCell<Friend> {
             controller.setTimestamp(setTimeString(now, messageTime));
             controller.setOnlineStatus(item.isIsOnline());
             content = controller.getFriendcard();
+            
+            controller.setProfilePicture(item.isProfilePicture() ? tmpFolder + "/" + item.getUsername() +".jpg" : "");
+            
             setGraphic(content);
             
         } else {

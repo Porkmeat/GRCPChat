@@ -7,11 +7,15 @@ package com.chatapp.callbacks;
 import com.chatapp.chatappgui.Friend;
 import com.chatapp.friends.UserFriend;
 import com.chatapp.grpcchatappclient.FriendListener;
+import com.google.common.io.Files;
 import io.grpc.stub.StreamObserver;
+import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -21,9 +25,11 @@ import java.util.logging.Logger;
 public class FriendCallback implements StreamObserver<UserFriend> {
 
     private final ArrayList<FriendListener> friendListeners;
+    private final String tmpFolder;
 
-    public FriendCallback(ArrayList<FriendListener> friendListeners) {
+    public FriendCallback(ArrayList<FriendListener> friendListeners, String tmpFolder) {
         this.friendListeners = friendListeners;
+        this.tmpFolder = tmpFolder;
     }
 
     @Override
@@ -32,8 +38,18 @@ public class FriendCallback implements StreamObserver<UserFriend> {
         var friend = new Friend(user.getUser().getUsername(), user.getUser().getUserId(),
                 user.getAlias(), user.getIsSender(), user.getUnseenChats(), user.getLastMsg(), LocalDateTime.now());
 
-        friend.setIsOnline(user.getIsOnline());
+        if (!user.getProfilePicture().isEmpty()) {
+            File profilePicture = new File (tmpFolder + "/" + user.getUser().getUsername() + ".jpg");
+            try {
+                Files.write(user.getProfilePicture().toByteArray(), profilePicture);
+                friend.setProfilePicture(true);
+            } catch (IOException ex) {
+                Logger.getLogger(FriendCallback.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         
+        friend.setIsOnline(user.getIsOnline());
+
         switch (user.getType()) {
             case FRIEND -> {
                 Instant timestampUTC = Instant.parse(user.getTimestamp() + "Z");

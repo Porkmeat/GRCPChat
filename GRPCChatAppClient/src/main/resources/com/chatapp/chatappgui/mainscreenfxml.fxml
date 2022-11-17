@@ -94,7 +94,7 @@
                   </TabPane>
                </children>
             </VBox>
-            <BorderPane fx:id="chatscreen" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+            <BorderPane fx:id="chatscreen" prefHeight="200.0" prefWidth="200.0" visible="false" GridPane.columnIndex="1">
                <top>
                   <AnchorPane prefHeight="60.0" prefWidth="559.0" style="-fx-background-color: #eeeeee;" BorderPane.alignment="CENTER">
                      <children>

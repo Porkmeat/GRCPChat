@@ -15,20 +15,35 @@ import com.chatapp.chat.SendMessageRequest;
 import com.chatapp.chatappgui.Friend;
 import com.chatapp.common.GetRequest;
 import com.chatapp.common.User;
+import com.chatapp.file.File;
+import com.chatapp.file.FileServiceGrpc;
+import com.chatapp.file.FileUploadRequest;
+import com.chatapp.file.MetaData;
 import com.chatapp.friends.AnswerRequest;
 import com.chatapp.friends.FriendManagingServiceGrpc;
 import com.chatapp.friends.FriendRequest;
 import com.chatapp.login.LoginRequest;
 import com.chatapp.login.LoginServiceGrpc;
 import com.chatapp.login.ServerResponse;
+import com.chatapp.observers.FileUploadObserver;
 import com.chatapp.status.StatusServiceGrpc;
+import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -39,7 +54,7 @@ public class GRPCChatAppClient {
     private final int port;
     private final String serverName;
     private ManagedChannel channel;
-    private String tempdir;
+    private String tmpFolder;
     private final ArrayList<StatusListener> statusListeners = new ArrayList<>();
     private final ArrayList<MessageListener> messageListeners = new ArrayList<>();
     private final ArrayList<FriendListener> friendListeners = new ArrayList<>();
@@ -47,11 +62,18 @@ public class GRPCChatAppClient {
     private StatusServiceGrpc.StatusServiceStub statusStub;
     private ChatServiceGrpc.ChatServiceStub chatStub;
     private FriendManagingServiceGrpc.FriendManagingServiceStub friendStub;
+    private FileServiceGrpc.FileServiceStub fileStub;
     private String JWToken;
 
     public GRPCChatAppClient(String serverName, int port) {
         this.serverName = serverName;
         this.port = port;
+        
+        Path path = Paths.get(FileUtils.getTempDirectory().getAbsolutePath(), UUID.randomUUID().toString());
+        try {this.tmpFolder = Files.createDirectories(path).toFile().getAbsolutePath();
+        } catch (IOException ex) {
+            Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public boolean connect() {
@@ -71,6 +93,7 @@ public class GRPCChatAppClient {
                 statusStub = StatusServiceGrpc.newStub(channel);
                 chatStub = ChatServiceGrpc.newStub(channel);
                 friendStub = FriendManagingServiceGrpc.newStub(channel);
+                fileStub = FileServiceGrpc.newStub(channel);
 
                 return true;
             } else {
@@ -118,7 +141,7 @@ public class GRPCChatAppClient {
         try {
             chatStub.receiveMessage(request, new NewMessageCallback(messageListeners));
             statusStub.receiveStatus(request, new StatusCallback(statusListeners));
-            friendStub.recieveUsers(request, new FriendCallback(friendListeners));
+            friendStub.recieveUsers(request, new FriendCallback(friendListeners, tmpFolder));
             return true;
         } catch (StatusRuntimeException e) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.WARNING, "RPC failed: {0}", e.getStatus());
@@ -134,6 +157,40 @@ public class GRPCChatAppClient {
             friendStub.getFriendsAndRequests(request, new ServiceResponseCallback());
         } catch (StatusRuntimeException e) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.WARNING, "RPC failed: {0}", e.getStatus());
+        }
+    }
+
+    public void uploadProfilePicture(String filePath) {
+
+        try {
+            StreamObserver<FileUploadRequest> streamObserver = this.fileStub.fileUpload(new FileUploadObserver());
+
+// input file for testing
+            Path path = Paths.get("D:\\Documents\\NetBeansProjects\\GRCPChat\\GRPCChatAppClient\\src\\main\\resources\\com\\chatapp\\chatappgui\\phantom-of-the-opera-mask-22876.jpg");
+
+// build metadata
+            FileUploadRequest metadata = FileUploadRequest.newBuilder()
+                    .setMetadata(MetaData.newBuilder()
+                            .setToken(JWToken)
+                            .setFileType(FilenameUtils.getExtension(path.toString()))
+                            .setIsProfilePic(true))
+                    .build();
+            streamObserver.onNext(metadata);
+// upload file as chunk
+            try ( InputStream inputStream = Files.newInputStream(path)) {
+                byte[] bytes = new byte[4096];
+                int size;
+                while ((size = inputStream.read(bytes)) > 0) {
+                    FileUploadRequest uploadRequest = FileUploadRequest.newBuilder()
+                            .setFile(File.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build())
+                            .build();
+                    streamObserver.onNext(uploadRequest);
+                }
+// close the stream
+            }
+            streamObserver.onCompleted();
+        } catch (IOException ex) {
+            Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -228,4 +285,9 @@ public class GRPCChatAppClient {
     public void removeFriendListener(FriendListener listener) {
         friendListeners.remove(listener);
     }
+
+    public String getTmpFolder() {
+        return tmpFolder;
+    }
+    
 }

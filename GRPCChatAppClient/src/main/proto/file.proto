@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package file;
+
+option java_multiple_files = true;
+option java_package = "com.chatapp.file";
+
+service FileService {
+  rpc FileUpload(stream FileUploadRequest) returns(FileUploadResponse);
+  rpc FileDownload(FileDownloadRequest) returns (stream File);
+}
+
+message MetaData {
+  string token = 1;
+  string file_name = 2;
+  string file_type = 3;
+  bool is_profile_pic = 4;
+}
+
+message File {
+  bytes content = 1;
+}
+
+enum Status {
+  PENDING = 0;
+  IN_PROGRESS = 1;
+  SUCCESS = 2;
+  FAILED = 3;
+}
+
+message FileUploadRequest {
+  oneof request {
+    MetaData metadata = 1;
+    File file = 2;
+  }
+}
+
+message FileUploadResponse {
+  string name = 1;
+  Status status = 2;
+}
+
+message FileDownloadRequest {
+  string token = 1;
+  string file_name = 2;
+}

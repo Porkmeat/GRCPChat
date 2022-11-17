@@ -7,6 +7,7 @@ package com.chatapp.server;
 import com.chatapp.chat.ChatMessage;
 import com.chatapp.friends.UserFriend;
 import com.chatapp.service.ChatService;
+import com.chatapp.service.FileService;
 import com.chatapp.service.FriendManagementService;
 import com.chatapp.service.LoginService;
 import com.chatapp.service.StatusService;
@@ -22,22 +23,23 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author maria
  */
 public class GRPCChatApp {
-    
+
     public static void main(String args[]) throws IOException, InterruptedException {
         ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers = new ConcurrentHashMap<>();
         ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers = new ConcurrentHashMap<>();
         ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers = new ConcurrentHashMap<>();
-        
-        Server server = ServerBuilder.forPort(8818).addService(new LoginService(messageObservers,userObservers,statusObservers))
+
+        Server server = ServerBuilder.forPort(8818).addService(new LoginService(messageObservers, userObservers, statusObservers))
                 .addService(new FriendManagementService(userObservers, statusObservers))
                 .addService(new ChatService(messageObservers))
-            .addService(new StatusService(statusObservers)).build();
-        
+                .addService(new StatusService(statusObservers))
+                .addService(new FileService()).build();
+
         server.start();
-        
+
         System.out.println("Server started on port: " + server.getPort());
-        
+
         server.awaitTermination();
     }
-    
+
 }

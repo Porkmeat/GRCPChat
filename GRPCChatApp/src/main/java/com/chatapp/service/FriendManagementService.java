@@ -16,7 +16,15 @@ import com.chatapp.friends.UserFriend;
 import com.chatapp.grpcchatapp.FriendData;
 import com.chatapp.grpcchatapp.JWToken;
 import com.chatapp.status.StatusUpdate;
+import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -30,6 +38,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
 
     private final ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers;
     private final ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
+    private final String PROFILE_PIC_PATH = "src/main/resources/profilepictures/";
 
     public FriendManagementService(ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers, ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
         this.userObservers = userObservers;
@@ -173,13 +182,20 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
         responseObserver.onCompleted();
     }
 
-    private UserFriend generateUserFriend(FriendData friend) {
+    private UserFriend generateUserFriend(FriendData friend) throws IOException {
         UserFriend.Builder userFriend = UserFriend.newBuilder();
         userFriend.setUser(User.newBuilder()
                 .setUsername(friend.getUser().getUsername())
                 .setUserId(friend.getUser().getUserId()))
                 .setAlias(friend.getAlias())
                 .setType(friend.getType());
+
+        try ( InputStream inputStream = Files.newInputStream(Paths.get(PROFILE_PIC_PATH + friend.getProfilePicture()))) {
+            userFriend.setProfilePicture(ByteString.copyFrom(inputStream.readAllBytes()));
+        } catch (FileNotFoundException ex) {
+            userFriend.setProfilePicture(ByteString.EMPTY);
+        }
+        
         switch (friend.getType()) {
             case REQUEST -> {
                 userFriend.setLastMsg("")
@@ -194,6 +210,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                         .setTimestamp(friend.getTimestamp())
                         .setUnseenChats(friend.getUnseenChats())
                         .setIsOnline(userObservers.containsKey(friend.getUser().getUserId()));
+
             }
         }
 
