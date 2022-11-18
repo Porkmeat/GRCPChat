@@ -6,6 +6,7 @@ import com.chatapp.grpcchatappclient.MessageListener;
 import com.chatapp.grpcchatappclient.RequestListener;
 import com.chatapp.grpcchatappclient.StatusListener;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
+import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -33,6 +34,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -90,6 +92,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.addMessageListener(this);
         this.client.addFriendListener(this);
         this.client.requestStreams();
+        new Thread(fetchProfilePicture).start();
 
         ObservableList<Friend> friends = FXCollections.observableArrayList(Friend.extractor());
         userlist.setCellFactory((ListView<Friend> userlist1) -> new FriendListCell(client.getTmpFolder()));
@@ -107,7 +110,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                         activeChats.put(currentChat, newChat);
                         client.fetchMessages(friendUsername, currentChat);
                     }
-                    
+
                     if (mainchatusername.getText() != null && !mainchatusername.getText().equals(friendUsername)) {
 
                         Platform.runLater(() -> {
@@ -117,7 +120,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                             mainchatusername.setText(friendUsername);
                             mainchatimg.setImage(t1.getProfilePicture());
                         });
-                        
+
                         if (!chatscreen.isVisible()) {
                             Platform.runLater(() -> {
                                 chatscreen.setVisible(true);
@@ -250,7 +253,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 });
             }
         }
-        
+
         if (activeChats.containsKey(fromUser)) {
             ListView<Chat> chatWithUser = activeChats.get(fromUser);
             int chatWithUserSize = chatWithUser.getItems().size();
@@ -386,5 +389,19 @@ public class MainScreenController implements StatusListener, MessageListener, Re
             }
         }
     }
+
+    Task<Void> fetchProfilePicture = new Task<Void>() {
+        @Override
+        protected Void call() throws Exception {
+            String filePath = client.fetchFile(mainusername.getText() + ".jpg", true);
+            System.out.println(filePath);
+            if (!filePath.isEmpty()) {
+                Platform.runLater(() -> {
+                    mainchatimg.setImage(new Image(filePath));
+                });
+            }
+            return null;
+        }
+    };
 
 }

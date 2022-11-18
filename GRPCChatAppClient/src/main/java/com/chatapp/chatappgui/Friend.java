@@ -5,7 +5,6 @@
 package com.chatapp.chatappgui;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;

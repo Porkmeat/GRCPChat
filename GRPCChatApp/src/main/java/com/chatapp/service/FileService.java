@@ -6,20 +6,25 @@ package com.chatapp.service;
 
 import com.chatapp.database.MySqlConnection;
 import com.chatapp.file.File;
+import com.chatapp.file.FileChunk;
 import com.chatapp.file.FileDownloadRequest;
 import com.chatapp.file.FileServiceGrpc;
 import com.chatapp.file.FileUploadRequest;
 import com.chatapp.file.FileUploadResponse;
+import com.chatapp.file.MetaData;
 import com.chatapp.file.Status;
 import com.chatapp.grpcchatapp.JWToken;
 import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -36,6 +41,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
             // upload context variables
             OutputStream writer;
             Status status = Status.IN_PROGRESS;
+            boolean tokenIsValid = true;
             boolean isProfilePicture;
 
             @Override
@@ -44,6 +50,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
                     if (fileUploadRequest.hasMetadata()) {
                         JWToken token = new JWToken(fileUploadRequest.getMetadata().getToken());
                         if (token.isValid()) {
+                            tokenIsValid = true;
                             isProfilePicture = fileUploadRequest.getMetadata().getIsProfilePic();
                             writer = getFilePath(token, fileUploadRequest);
                         } else {
@@ -51,7 +58,12 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
                             this.onCompleted();
                         }
                     } else {
-                        writeFile(writer, fileUploadRequest.getFile().getContent());
+                        if (tokenIsValid) {
+                            writeFile(writer, fileUploadRequest.getFileChunk().getContent());
+                        } else {
+                            status = Status.FAILED;
+                            this.onCompleted();
+                        }
                     }
                 } catch (IOException e) {
                     this.onError(e);
@@ -67,7 +79,6 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
             @Override
             public void onCompleted() {
                 if (writer != null) {
-                    
                     closeFile(writer);
                 }
                 status = Status.IN_PROGRESS.equals(status) ? Status.SUCCESS : status;
@@ -81,18 +92,42 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
     }
 
     @Override
-    public void fileDownload(FileDownloadRequest request, StreamObserver<File> responseObserver) {
+    public void fileDownload(FileDownloadRequest request, StreamObserver<FileChunk> responseObserver) {
 
+        JWToken token = new JWToken(request.getMetadata().getToken());
+        if (token.isValid()) {
+            try {
+
+                Path fileLocation = Paths.get(SERVER_BASE_PATH.toString(), (request.getMetadata().getIsProfilePic() ? "/profilepictures" : "/chatfiles")
+                       ,"/" , request.getMetadata().getFileName());
+                
+                
+                try ( InputStream inputStream = Files.newInputStream(fileLocation)) {
+
+                    byte[] bytes = new byte[4096];
+                    int size;
+                    while ((size = inputStream.read(bytes)) > 0) {
+                        FileChunk fileChunk = FileChunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build();
+                        responseObserver.onNext(fileChunk);
+                    }
+// close the stream
+                }
+                responseObserver.onCompleted();
+            } catch (IOException ex) {
+                responseObserver.onError(ex);
+                Logger.getLogger(FileService.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     private OutputStream getFilePath(JWToken token, FileUploadRequest request) throws IOException {
         boolean isProfilePicture = request.getMetadata().getIsProfilePic();
-        
+
         Path saveLocation = Paths.get(SERVER_BASE_PATH.toString(), isProfilePicture ? "/profilepictures" : "/chatfiles");
-        
-        String fileName = (isProfilePicture ? token.getUsername() : request.getMetadata().getFileName()) 
+
+        String fileName = (isProfilePicture ? token.getUsername() : request.getMetadata().getFileName())
                 + "." + request.getMetadata().getFileType();
-        
+
         return Files.newOutputStream(saveLocation.resolve(fileName), StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
     }

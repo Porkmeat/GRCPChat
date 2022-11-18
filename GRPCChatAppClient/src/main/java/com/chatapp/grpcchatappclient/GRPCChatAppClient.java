@@ -15,7 +15,8 @@ import com.chatapp.chat.SendMessageRequest;
 import com.chatapp.chatappgui.Friend;
 import com.chatapp.common.GetRequest;
 import com.chatapp.common.User;
-import com.chatapp.file.File;
+import com.chatapp.file.FileChunk;
+import com.chatapp.file.FileDownloadRequest;
 import com.chatapp.file.FileServiceGrpc;
 import com.chatapp.file.FileUploadRequest;
 import com.chatapp.file.MetaData;
@@ -34,11 +35,14 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,14 +67,16 @@ public class GRPCChatAppClient {
     private ChatServiceGrpc.ChatServiceStub chatStub;
     private FriendManagingServiceGrpc.FriendManagingServiceStub friendStub;
     private FileServiceGrpc.FileServiceStub fileStub;
+    private FileServiceGrpc.FileServiceBlockingStub fileBlockingStub;
     private String JWToken;
 
     public GRPCChatAppClient(String serverName, int port) {
         this.serverName = serverName;
         this.port = port;
-        
+
         Path path = Paths.get(FileUtils.getTempDirectory().getAbsolutePath(), UUID.randomUUID().toString());
-        try {this.tmpFolder = Files.createDirectories(path).toFile().getAbsolutePath();
+        try {
+            this.tmpFolder = Files.createDirectories(path).toFile().getAbsolutePath();
         } catch (IOException ex) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -94,6 +100,7 @@ public class GRPCChatAppClient {
                 chatStub = ChatServiceGrpc.newStub(channel);
                 friendStub = FriendManagingServiceGrpc.newStub(channel);
                 fileStub = FileServiceGrpc.newStub(channel);
+                fileBlockingStub = FileServiceGrpc.newBlockingStub(channel);
 
                 return true;
             } else {
@@ -178,12 +185,12 @@ public class GRPCChatAppClient {
             streamObserver.onNext(metadata);
 // upload file as chunk
             try ( InputStream inputStream = Files.newInputStream(path)) {
-                
+
                 byte[] bytes = new byte[4096];
                 int size;
                 while ((size = inputStream.read(bytes)) > 0) {
                     FileUploadRequest uploadRequest = FileUploadRequest.newBuilder()
-                            .setFile(File.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build())
+                            .setFileChunk(FileChunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build())
                             .build();
                     streamObserver.onNext(uploadRequest);
                 }
@@ -193,6 +200,47 @@ public class GRPCChatAppClient {
         } catch (IOException ex) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public String fetchFile(String fileName, boolean isProfilePicture) {
+        OutputStream writer = null;
+        String filePath = "";
+        try {
+            Path saveLocation = Paths.get(tmpFolder);
+            writer = Files.newOutputStream(saveLocation.resolve(fileName), StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
+            FileDownloadRequest request = FileDownloadRequest.newBuilder()
+                    .setMetadata(MetaData.newBuilder().setToken(JWToken).setFileName(fileName).setIsProfilePic(isProfilePicture))
+                    .build();
+            Iterator<FileChunk> fileChunks;
+            System.out.println(saveLocation.toString());
+
+            try {
+                fileChunks = fileBlockingStub.fileDownload(request);
+                for (int i = 1; fileChunks.hasNext(); i++) {
+                    FileChunk fileChunk = fileChunks.next();
+                    writer.write(fileChunk.toByteArray());
+                    writer.flush();
+                }
+                filePath = saveLocation.toString()+ "/" + fileName;
+                System.out.println(filePath);
+            } catch (StatusRuntimeException e) {
+
+            }
+
+        } catch (IOException ex) {
+            Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, ex);
+
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return filePath;
     }
 
     public void respondToRequest(Friend requester, int response) {
@@ -290,5 +338,5 @@ public class GRPCChatAppClient {
     public String getTmpFolder() {
         return tmpFolder;
     }
-    
+
 }
