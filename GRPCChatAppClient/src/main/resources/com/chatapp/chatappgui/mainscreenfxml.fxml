@@ -11,7 +11,6 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
@@ -98,11 +97,7 @@
                <top>
                   <AnchorPane prefHeight="60.0" prefWidth="559.0" style="-fx-background-color: #eeeeee;" BorderPane.alignment="CENTER">
                      <children>
-                        <ImageView fx:id="mainchatimg" fitHeight="50.0" fitWidth="50.0" layoutX="16.0" layoutY="14.0" pickOnBounds="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
-                           <image>
-                              <Image url="@whitecoat_seal_T3506.jpg" />
-                           </image>
-                        </ImageView>
+                        <ImageView fx:id="mainchatimg" fitHeight="50.0" fitWidth="50.0" layoutX="16.0" layoutY="14.0" pickOnBounds="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
                         <Label fx:id="mainchatusername" layoutX="68.0" layoutY="22.0" text="Label" AnchorPane.leftAnchor="75.0">
                            <font>
                               <Font name="Arial Bold" size="14.0" />

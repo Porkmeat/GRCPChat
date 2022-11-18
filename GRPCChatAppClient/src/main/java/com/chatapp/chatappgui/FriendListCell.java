@@ -54,7 +54,7 @@ public class FriendListCell extends ListCell<Friend> {
             controller.setOnlineStatus(item.isIsOnline());
             content = controller.getFriendcard();
             
-            controller.setProfilePicture(item.isProfilePicture() ? tmpFolder + "/" + item.getUsername() +".jpg" : "");
+            controller.setProfilePicture(item.getProfilePicture());
             
             setGraphic(content);
             

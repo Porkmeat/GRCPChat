@@ -17,6 +17,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.image.Image;
 
 /**
  *
@@ -38,15 +39,17 @@ public class FriendCallback implements StreamObserver<UserFriend> {
         var friend = new Friend(user.getUser().getUsername(), user.getUser().getUserId(),
                 user.getAlias(), user.getIsSender(), user.getUnseenChats(), user.getLastMsg(), LocalDateTime.now());
 
+        
         if (!user.getProfilePicture().isEmpty()) {
             File profilePicture = new File (tmpFolder + "/" + user.getUser().getUsername() + ".jpg");
             try {
-                Files.write(user.getProfilePicture().toByteArray(), profilePicture);
-                friend.setProfilePicture(true);
+                Files.write(user.getProfilePicture().toByteArray(), profilePicture); 
+                friend.setProfilePicture(new Image(profilePicture.getAbsolutePath()));
             } catch (IOException ex) {
                 Logger.getLogger(FriendCallback.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        
         
         friend.setIsOnline(user.getIsOnline());
 

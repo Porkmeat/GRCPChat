@@ -7,6 +7,7 @@ import com.chatapp.grpcchatappclient.RequestListener;
 import com.chatapp.grpcchatappclient.StatusListener;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -17,6 +18,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -31,6 +33,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
@@ -76,6 +79,8 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     private HBox requestButtons;
     @FXML
     private TabPane mainTabPane;
+    @FXML
+    private ImageView mainchatimg;
 
     public void setupController(GRPCChatAppClient client, String username) {
         mainusername.setText(username);
@@ -101,8 +106,8 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                         newChat.setCellFactory((ListView<Chat> newChat1) -> new ChatListCell());
                         activeChats.put(currentChat, newChat);
                         client.fetchMessages(friendUsername, currentChat);
-
                     }
+                    
                     if (mainchatusername.getText() != null && !mainchatusername.getText().equals(friendUsername)) {
 
                         Platform.runLater(() -> {
@@ -110,8 +115,9 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                             chatwindow.setContent(activeChat);
                             autoScroll();
                             mainchatusername.setText(friendUsername);
-
+                            mainchatimg.setImage(t1.getProfilePicture());
                         });
+                        
                         if (!chatscreen.isVisible()) {
                             Platform.runLater(() -> {
                                 chatscreen.setVisible(true);
@@ -121,7 +127,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 }
             }
         });
-        
+
         requestlist.setCellFactory((ListView<Friend> requestlist1) -> new RequestListCell());
 
         requestlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {
@@ -196,7 +202,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
         timeline.play();
     }
-    
+
     @FXML
     public void uploadProfilePicture() {
         client.uploadProfilePicture("");
@@ -221,11 +227,9 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 activeChat.getItems().add(newMessage);
                 autoScroll();
                 Friend friend = userlist.getSelectionModel().getSelectedItem();
-                userlist.getItems().remove(friend);
                 friend.setLastMsg(message);
                 friend.setTimestamp(now);
-                userlist.getItems().add(0, friend);
-                userlist.getSelectionModel().clearAndSelect(0);
+                userlist.getItems().sort(Comparator.naturalOrder());
             });
             client.msg("", currentChat, message);
             Platform.runLater(() -> {
@@ -240,22 +244,13 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         for (Friend friend : userlist.getItems()) {
             if (friend.getUserId() == fromUser) {
                 Platform.runLater(() -> {
-                    boolean isSelected;
-                    if (userlist.getSelectionModel().getSelectedItem() == null) {
-                        isSelected = false;
-                    } else {
-                        isSelected = userlist.getSelectionModel().getSelectedItem().equals(friend);
-                    }
-                    userlist.getItems().remove(friend);
                     friend.setLastMsg(message.getMessage());
                     friend.setTimestamp(message.getTimestamp());
-                    userlist.getItems().add(0, friend);
-                    if (isSelected) {
-                        userlist.getSelectionModel().clearAndSelect(0);
-                    }
+                    userlist.getItems().sort(Comparator.naturalOrder());
                 });
             }
         }
+        
         if (activeChats.containsKey(fromUser)) {
             ListView<Chat> chatWithUser = activeChats.get(fromUser);
             int chatWithUserSize = chatWithUser.getItems().size();

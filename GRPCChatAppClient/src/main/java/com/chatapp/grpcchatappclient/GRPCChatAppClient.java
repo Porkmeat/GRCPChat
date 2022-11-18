@@ -165,7 +165,7 @@ public class GRPCChatAppClient {
         try {
             StreamObserver<FileUploadRequest> streamObserver = this.fileStub.fileUpload(new FileUploadObserver());
 
-// input file for testing
+// file for testing
             Path path = Paths.get("D:\\Documents\\NetBeansProjects\\GRCPChat\\GRPCChatAppClient\\src\\main\\resources\\com\\chatapp\\chatappgui\\phantom-of-the-opera-mask-22876.jpg");
 
 // build metadata
@@ -178,6 +178,7 @@ public class GRPCChatAppClient {
             streamObserver.onNext(metadata);
 // upload file as chunk
             try ( InputStream inputStream = Files.newInputStream(path)) {
+                
                 byte[] bytes = new byte[4096];
                 int size;
                 while ((size = inputStream.read(bytes)) > 0) {

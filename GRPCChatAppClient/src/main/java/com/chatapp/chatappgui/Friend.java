@@ -5,23 +5,25 @@
 package com.chatapp.chatappgui;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.image.Image;
 import javafx.util.Callback;
 
 /**
  *
  * @author Mariano
  */
-public class Friend {
+public class Friend implements Comparable<Friend>{
 
     private String username;
     private int userId;
     private String alias;
     private boolean friendIsSender;
     private int unseenChats;
-    private boolean profilePicture;
+    private Image profilePicture;
     private String lastMsg;
     private LocalDateTime timestamp;
     public final BooleanProperty isOnline = new SimpleBooleanProperty();
@@ -35,7 +37,7 @@ public class Friend {
         this.lastMsg = lastMsg;
         this.timestamp = timestamp;
         this.isOnline.set(false);
-        this.profilePicture = false;
+        this.profilePicture = new Image("D:\\Documents\\NetBeansProjects\\GRCPChat\\GRPCChatAppClient\\src\\main\\resources\\com\\chatapp\\chatappgui\\whitecoat_seal_T3506.jpg");
 
     }
     
@@ -107,13 +109,19 @@ public class Friend {
         this.isOnline.set(isOnline);
     }
 
-    public boolean isProfilePicture() {
+    public Image getProfilePicture() {
         return profilePicture;
     }
 
-    public void setProfilePicture(boolean profilePicture) {
+    public void setProfilePicture(Image profilePicture) {
         this.profilePicture = profilePicture;
     }
+
+    @Override
+    public int compareTo(Friend friend2) {
+        return friend2.getTimestamp().compareTo(timestamp);
+    }
+
     
     
     

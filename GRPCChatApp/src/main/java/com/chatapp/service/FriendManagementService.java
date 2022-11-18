@@ -182,7 +182,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
         responseObserver.onCompleted();
     }
 
-    private UserFriend generateUserFriend(FriendData friend) throws IOException {
+    private UserFriend generateUserFriend(FriendData friend)  {
         UserFriend.Builder userFriend = UserFriend.newBuilder();
         userFriend.setUser(User.newBuilder()
                 .setUsername(friend.getUser().getUsername())
@@ -192,7 +192,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
 
         try ( InputStream inputStream = Files.newInputStream(Paths.get(PROFILE_PIC_PATH + friend.getProfilePicture()))) {
             userFriend.setProfilePicture(ByteString.copyFrom(inputStream.readAllBytes()));
-        } catch (FileNotFoundException ex) {
+        } catch (IOException ex) {
             userFriend.setProfilePicture(ByteString.EMPTY);
         }
         
