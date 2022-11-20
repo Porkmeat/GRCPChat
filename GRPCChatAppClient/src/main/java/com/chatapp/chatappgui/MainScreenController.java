@@ -41,6 +41,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -394,14 +395,37 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         @Override
         protected Void call() throws Exception {
             String filePath = client.fetchFile(mainusername.getText() + ".jpg", true);
-            System.out.println(filePath);
             if (!filePath.isEmpty()) {
-                Platform.runLater(() -> {
-                    mainchatimg.setImage(new Image(filePath));
-                });
+                setProfilePicture(new Image(filePath));
             }
             return null;
         }
     };
+
+    public void setProfilePicture(Image image) {
+
+        double radius = mainuserimg.getRadius();
+        final double hRad;   // horizontal "radius"
+        final double vRad;   // vertical "radius"
+        if (image.getWidth() != image.getHeight()) {
+            double ratio = image.getWidth() / image.getHeight();
+            if (ratio > 1) {
+                // Width is longer, left anchor is outside
+                hRad = radius * ratio;
+                vRad = radius;
+            } else {
+                // Height is longer, top anchor is outside
+                vRad = radius / ratio;
+                hRad = radius;
+            } 
+        } else {
+            hRad = radius;
+            vRad = radius;
+        }
+        Platform.runLater(() -> {
+            mainuserimg.setFill(new ImagePattern(image, -hRad, -vRad, 2 * hRad, 2 * vRad, false));
+        });
+
+    }
 
 }

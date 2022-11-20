@@ -4,27 +4,30 @@
  */
 package com.chatapp.service;
 
-import com.chatapp.database.MySqlConnection;
-import com.chatapp.file.File;
 import com.chatapp.file.FileChunk;
 import com.chatapp.file.FileDownloadRequest;
+import com.chatapp.file.FileDownloadResponse;
 import com.chatapp.file.FileServiceGrpc;
 import com.chatapp.file.FileUploadRequest;
 import com.chatapp.file.FileUploadResponse;
-import com.chatapp.file.MetaData;
 import com.chatapp.file.Status;
+
 import com.chatapp.grpcchatapp.JWToken;
+
 import com.google.protobuf.ByteString;
+
 import io.grpc.stub.StreamObserver;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import java.util.Arrays;
 
 /**
  *
@@ -92,30 +95,29 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
     }
 
     @Override
-    public void fileDownload(FileDownloadRequest request, StreamObserver<FileChunk> responseObserver) {
+    public void fileDownload(FileDownloadRequest request, StreamObserver<FileDownloadResponse> responseObserver) {
 
         JWToken token = new JWToken(request.getMetadata().getToken());
         if (token.isValid()) {
             try {
+                Path fileLocation = Paths.get(SERVER_BASE_PATH.toString(), (request.getMetadata().getIsProfilePic() ? "/profilepictures" : "/chatfiles"),
+                        "/", request.getMetadata().getFileName());
 
-                Path fileLocation = Paths.get(SERVER_BASE_PATH.toString(), (request.getMetadata().getIsProfilePic() ? "/profilepictures" : "/chatfiles")
-                       ,"/" , request.getMetadata().getFileName());
-                
-                
                 try ( InputStream inputStream = Files.newInputStream(fileLocation)) {
 
-                    byte[] bytes = new byte[4096];
+                    byte[] bytes = new byte[4 * 1024];
                     int size;
                     while ((size = inputStream.read(bytes)) > 0) {
-                        FileChunk fileChunk = FileChunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build();
+                        FileDownloadResponse fileChunk = FileDownloadResponse.newBuilder()
+                                .setFileChunk(FileChunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size))).build();
                         responseObserver.onNext(fileChunk);
                     }
 // close the stream
                 }
                 responseObserver.onCompleted();
             } catch (IOException ex) {
-                responseObserver.onError(ex);
-                Logger.getLogger(FileService.class.getName()).log(Level.SEVERE, null, ex);
+                responseObserver.onCompleted();
+                System.out.println("File not found.");
             }
         }
     }

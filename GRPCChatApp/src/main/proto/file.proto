@@ -7,7 +7,7 @@ option java_package = "com.chatapp.file";
 
 service FileService {
   rpc FileUpload(stream FileUploadRequest) returns(FileUploadResponse);
-  rpc FileDownload(FileDownloadRequest) returns (stream FileChunk);
+  rpc FileDownload(FileDownloadRequest) returns (stream FileDownloadResponse);
 }
 
 message MetaData {
@@ -42,4 +42,8 @@ message FileUploadResponse {
 
 message FileDownloadRequest {
   MetaData metadata = 1;
+}
+
+message FileDownloadResponse {
+  FileChunk file_chunk = 1;
 }
