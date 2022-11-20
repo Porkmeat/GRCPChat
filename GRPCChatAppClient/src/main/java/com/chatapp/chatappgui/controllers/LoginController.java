@@ -1,5 +1,6 @@
-package com.chatapp.chatappgui;
+package com.chatapp.chatappgui.controllers;
 
+import com.chatapp.chatappgui.Appgui;
 import com.chatapp.grpcchatappclient.GRPCChatAppClient;
 import java.io.IOException;
 import java.util.logging.Level;

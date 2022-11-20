@@ -4,9 +4,9 @@
  */
 package com.chatapp.callbacks;
 
-import com.chatapp.chatappgui.Friend;
+import com.chatapp.dataobjects.Friend;
 import com.chatapp.friends.UserFriend;
-import com.chatapp.grpcchatappclient.FriendListener;
+import com.chatapp.listeners.FriendListener;
 import com.google.common.io.Files;
 import io.grpc.stub.StreamObserver;
 import java.io.File;

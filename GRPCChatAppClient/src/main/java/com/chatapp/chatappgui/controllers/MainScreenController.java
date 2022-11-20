@@ -1,10 +1,15 @@
-package com.chatapp.chatappgui;
+package com.chatapp.chatappgui.controllers;
 
-import com.chatapp.grpcchatappclient.FriendListener;
+import com.chatapp.dataobjects.Chat;
+import com.chatapp.chatappgui.javafxelements.ChatListCell;
+import com.chatapp.dataobjects.Friend;
+import com.chatapp.chatappgui.javafxelements.FriendListCell;
+import com.chatapp.chatappgui.javafxelements.RequestListCell;
+import com.chatapp.listeners.FriendListener;
 import com.chatapp.grpcchatappclient.GRPCChatAppClient;
-import com.chatapp.grpcchatappclient.MessageListener;
-import com.chatapp.grpcchatappclient.RequestListener;
-import com.chatapp.grpcchatappclient.StatusListener;
+import com.chatapp.listeners.MessageListener;
+import com.chatapp.listeners.RequestListener;
+import com.chatapp.listeners.StatusListener;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;

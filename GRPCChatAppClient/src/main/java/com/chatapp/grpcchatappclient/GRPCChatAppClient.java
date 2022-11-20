@@ -4,6 +4,9 @@
  */
 package com.chatapp.grpcchatappclient;
 
+import com.chatapp.listeners.MessageListener;
+import com.chatapp.listeners.StatusListener;
+import com.chatapp.listeners.FriendListener;
 import com.chatapp.callbacks.FriendCallback;
 import com.chatapp.callbacks.GetMessagesCallback;
 import com.chatapp.callbacks.NewMessageCallback;
@@ -12,7 +15,7 @@ import com.chatapp.callbacks.StatusCallback;
 import com.chatapp.chat.ChatServiceGrpc;
 import com.chatapp.chat.GetChatRequest;
 import com.chatapp.chat.SendMessageRequest;
-import com.chatapp.chatappgui.Friend;
+import com.chatapp.dataobjects.Friend;
 import com.chatapp.common.GetRequest;
 import com.chatapp.common.User;
 import com.chatapp.file.FileChunk;

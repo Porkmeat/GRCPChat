@@ -2,8 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.chatapp.chatappgui;
+package com.chatapp.chatappgui.javafxelements;
 
+import com.chatapp.dataobjects.Friend;
 import javafx.scene.control.ListCell;
 import javafx.scene.text.Text;
 

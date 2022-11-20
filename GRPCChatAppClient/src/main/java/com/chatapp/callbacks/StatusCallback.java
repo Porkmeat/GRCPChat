@@ -4,7 +4,7 @@
  */
 package com.chatapp.callbacks;
 
-import com.chatapp.grpcchatappclient.StatusListener;
+import com.chatapp.listeners.StatusListener;
 import com.chatapp.status.StatusUpdate;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;

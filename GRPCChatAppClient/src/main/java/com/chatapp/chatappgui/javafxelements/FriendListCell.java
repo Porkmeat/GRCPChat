@@ -2,8 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.chatapp.chatappgui;
+package com.chatapp.chatappgui.javafxelements;
 
+import com.chatapp.chatappgui.Appgui;
+import com.chatapp.dataobjects.Friend;
+import com.chatapp.chatappgui.controllers.FriendsfxmlController;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

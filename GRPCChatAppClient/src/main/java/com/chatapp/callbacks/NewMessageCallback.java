@@ -5,8 +5,8 @@
 package com.chatapp.callbacks;
 
 import com.chatapp.chat.ChatMessage;
-import com.chatapp.chatappgui.Chat;
-import com.chatapp.grpcchatappclient.MessageListener;
+import com.chatapp.dataobjects.Chat;
+import com.chatapp.listeners.MessageListener;
 import io.grpc.stub.StreamObserver;
 import java.time.Instant;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package com.chatapp.chatappgui;
+package com.chatapp.chatappgui.javafxelements;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license

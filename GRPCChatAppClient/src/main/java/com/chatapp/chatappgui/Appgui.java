@@ -1,5 +1,6 @@
 package com.chatapp.chatappgui;
 
+import com.chatapp.chatappgui.controllers.LoginController;
 import com.chatapp.grpcchatappclient.GRPCChatAppClient;
 import java.io.IOException;
 import javafx.application.Application;
