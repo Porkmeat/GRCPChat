@@ -15,6 +15,7 @@ import com.chatapp.login.LoginServiceGrpc;
 import com.chatapp.login.ServerResponse;
 import com.chatapp.status.StatusUpdate;
 import io.grpc.stub.StreamObserver;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,7 +77,7 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
                 }
                 response.setToken("Successfully logged out");
                 response.setResponseCode(1);
-            } catch (Exception ex) {
+            } catch (SQLException ex) {
                 Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
                 response.setToken("Internal error");
                 response.setResponseCode(0);
@@ -106,7 +107,7 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
                 response.setToken("Connection Failed!").setResponseCode(0);
             }
 
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
         }
         responseObserver.onNext(response.build());
@@ -134,7 +135,7 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
                 response.setToken("Username not available!");
                 response.setResponseCode(0);
             }
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
             response.setToken("Internal error");
             response.setResponseCode(0);

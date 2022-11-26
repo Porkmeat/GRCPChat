@@ -15,6 +15,7 @@ import com.chatapp.database.MySqlConnection;
 import com.chatapp.grpcchatapp.JWToken;
 import com.chatapp.grpcchatapp.MessageData;
 import io.grpc.stub.StreamObserver;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,7 +61,7 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
                     chatMessage.clear();
                 }
 
-            } catch (Exception ex) {
+            } catch (SQLException ex) {
                 Logger.getLogger(ChatService.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -87,7 +88,7 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
 
                 response.setResponse("Message sent");
                 response.setResponseCode(1);
-            } catch (Exception ex) {
+            } catch (SQLException ex) {
                 Logger.getLogger(ChatService.class.getName()).log(Level.SEVERE, null, ex);
                 response.setResponse("Internal error");
                 response.setResponseCode(0);

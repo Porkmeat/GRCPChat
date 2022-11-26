@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -81,7 +82,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                 response.setResponse("Request " + answer.getValueDescriptor().getName());
                 response.setResponseCode(1);
 
-            } catch (Exception ex) {
+            } catch (SQLException ex) {
 
                 Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
                 response.setResponse("Internal error");
@@ -113,7 +114,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                     }
                 }
                 response.setResponse("Friends and requests fetched").setResponseCode(1);
-            } catch (Exception ex) {
+            } catch (SQLException ex) {
                 Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
                 response.setResponse("Internal error").setResponseCode(0);
             }
@@ -165,7 +166,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                     response.setResponseCode(0);
 
                 }
-            } catch (Exception ex) {
+            } catch (SQLException ex) {
                 Logger.getLogger(FriendManagementService.class
                         .getName()).log(Level.SEVERE, null, ex);
                 response.setResponse("Internal error");

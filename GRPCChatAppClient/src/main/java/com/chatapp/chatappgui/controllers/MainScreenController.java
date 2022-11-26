@@ -11,7 +11,6 @@ import com.chatapp.listeners.MessageListener;
 import com.chatapp.listeners.RequestListener;
 import com.chatapp.listeners.StatusListener;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -374,28 +373,6 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         });
     }
 
-    private class EnterKeyHandler implements EventHandler<KeyEvent> {
-
-        private KeyEvent keypress;
-
-        @Override
-        public void handle(KeyEvent event) {
-            if (keypress != null) {
-                keypress = null;
-                return;
-            }
-
-            Parent parent = chatinput.getParent();
-            if (parent != null) {
-                if (event.getCode() == KeyCode.ENTER) {
-                    Event parentEvent = event.copyFor(parent, parent);
-                    parent.fireEvent(parentEvent);
-                    event.consume();
-                }
-            }
-        }
-    }
-
     Task<Void> fetchProfilePicture = new Task<Void>() {
         @Override
         protected Void call() throws Exception {
@@ -422,7 +399,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 // Height is longer, top anchor is outside
                 vRad = radius / ratio;
                 hRad = radius;
-            } 
+            }
         } else {
             hRad = radius;
             vRad = radius;
@@ -431,6 +408,28 @@ public class MainScreenController implements StatusListener, MessageListener, Re
             mainuserimg.setFill(new ImagePattern(image, -hRad, -vRad, 2 * hRad, 2 * vRad, false));
         });
 
+    }
+
+    private class EnterKeyHandler implements EventHandler<KeyEvent> {
+
+        private KeyEvent keypress;
+
+        @Override
+        public void handle(KeyEvent event) {
+            if (keypress != null) {
+                keypress = null;
+                return;
+            }
+
+            Parent parent = chatinput.getParent();
+            if (parent != null) {
+                if (event.getCode() == KeyCode.ENTER) {
+                    Event parentEvent = event.copyFor(parent, parent);
+                    parent.fireEvent(parentEvent);
+                    event.consume();
+                }
+            }
+        }
     }
 
 }

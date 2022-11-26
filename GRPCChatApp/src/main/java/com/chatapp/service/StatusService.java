@@ -11,6 +11,7 @@ import com.chatapp.grpcchatapp.JWToken;
 import com.chatapp.status.StatusServiceGrpc;
 import com.chatapp.status.StatusUpdate;
 import io.grpc.stub.StreamObserver;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -47,7 +48,7 @@ public class StatusService extends StatusServiceGrpc.StatusServiceImplBase {
                         statusObservers.get(friend).onNext(statusUpdate);
                     }
                 }
-            } catch (Exception ex) {
+            } catch (SQLException ex) {
                 Logger.getLogger(FriendManagementService.class
                         .getName()).log(Level.SEVERE, null, ex);
             }

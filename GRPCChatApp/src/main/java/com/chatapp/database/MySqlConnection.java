@@ -13,7 +13,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.json.JSONArray;
@@ -22,11 +21,10 @@ import org.json.JSONObject;
 public class MySqlConnection {
 
     private Connection connect = null;
-    private Statement statement = null;
     private PreparedStatement preparedStatement = null;
     private ResultSet resultSet = null;
 
-    public int getUserId(String username) throws Exception {
+    public int getUserId(String username) throws SQLException {
         try {
             System.out.println("connecting");
 
@@ -43,14 +41,14 @@ public class MySqlConnection {
                 return 0;
             }
 
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
         }
     }
 
-    public void addNewUser(String username, String password, int salt) throws Exception {
+    public void addNewUser(String username, String password, int salt) throws SQLException {
         try {
             connect();
             preparedStatement = connect
@@ -60,7 +58,7 @@ public class MySqlConnection {
             preparedStatement.setInt(3, salt);
 
             preparedStatement.executeUpdate();
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
@@ -68,7 +66,7 @@ public class MySqlConnection {
 
     }
     
-    public void addFriend(int userId,String username,int friendId, String friendName) throws Exception {
+    public void addFriend(int userId,String username,int friendId, String friendName) throws SQLException {
         try {
             connect();
             // generate unique id for friends chat
@@ -87,7 +85,7 @@ public class MySqlConnection {
             preparedStatement.setString(6, username);
 
             preparedStatement.executeUpdate();
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
@@ -100,7 +98,7 @@ public class MySqlConnection {
     }
 
     
-    public boolean checkPassword(String username, String password) throws Exception {
+    public boolean checkPassword(String username, String password) throws SQLException {
         try {
             connect();
             int salt = getSalt(username);
@@ -118,14 +116,14 @@ public class MySqlConnection {
             return userpass.equals(hashedpass);
             
             
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
         }
     }
     
-    public int getSalt(String username) throws Exception {
+    private int getSalt(String username) throws SQLException {
         try {
            // connect();
             preparedStatement = connect
@@ -138,15 +136,12 @@ public class MySqlConnection {
             return resultSet.getInt(1);
             
             
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } 
-//        finally {
-//            close();
-//        }
     }
     
-    public ArrayList<FriendData> fetchFriends(int userid) throws Exception {
+    public ArrayList<FriendData> fetchFriends(int userid) throws SQLException {
         ArrayList<FriendData> friends = new ArrayList<>();
         try {
             connect();
@@ -182,14 +177,14 @@ public class MySqlConnection {
             
             return friends;            
             
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
         }
     }
     
-    public ArrayList<Integer> getFriendList(int userId) throws Exception {
+    public ArrayList<Integer> getFriendList(int userId) throws SQLException {
 
         ArrayList<Integer> friendList = new ArrayList<>();
         try {
@@ -207,14 +202,14 @@ public class MySqlConnection {
             return friendList;
             
             
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
         }
     }
     
-    public ArrayList<MessageData> fetchMessages(int userid, int friendId) throws Exception {
+    public ArrayList<MessageData> fetchMessages(int userid, int friendId) throws SQLException {
         ArrayList<MessageData> messages = new ArrayList<>();
         try {
             connect();
@@ -236,7 +231,7 @@ public class MySqlConnection {
             return messages;
             
             
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
@@ -260,32 +255,28 @@ public class MySqlConnection {
     }
 
 
-    private void connect() throws Exception {
+    private void connect() throws SQLException {
         System.out.println("try to connect");
         connect = DriverManager
                 .getConnection("jdbc:mysql://localhost:3306/chatapp_schema", "javatest", "Java1test2");
         System.out.println("connected");
     }
     
-    private void close() {
+    private void close() throws SQLException {
         try {
             if (resultSet != null) {
                 resultSet.close();
-            }
-
-            if (statement != null) {
-                statement.close();
             }
 
             if (connect != null) {
                 connect.close();
             }
         } catch (SQLException e) {
-
+            throw e;
         }
     }
 
-    public void saveMsg(int userid, int recipientid, String message) throws Exception {
+    public void saveMsg(int userid, int recipientid, String message) throws SQLException {
         try {
             connect();
             // generate unique id for friends chat
@@ -307,7 +298,7 @@ public class MySqlConnection {
             preparedStatement.setString(2, message);
 
             preparedStatement.executeUpdate();
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
@@ -340,7 +331,7 @@ public class MySqlConnection {
 //        }
 //    }
 
-    public FriendData acceptRequest(int userid, int requesterId) throws Exception {
+    public FriendData acceptRequest(int userid, int requesterId) throws SQLException {
         try {
             connect();
             long chatUuid = generateChatUuid(userid, requesterId);
@@ -380,7 +371,7 @@ public class MySqlConnection {
                         , resultSet.getString(5), resultSet.getString(6), resultSet.getInt(7), UserFriend.Type.FRIEND);
 
             return friend;
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
@@ -388,7 +379,7 @@ public class MySqlConnection {
     }
     
     
-    public void denyRequest(int userid, int requesterId) throws Exception {
+    public void denyRequest(int userid, int requesterId) throws SQLException {
         try {
             connect();
             preparedStatement = connect
@@ -396,14 +387,14 @@ public class MySqlConnection {
             preparedStatement.setInt(1,userid);
             preparedStatement.setInt(2,requesterId);
             preparedStatement.executeUpdate();            
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
         }
     }
 
-    public void blockRequest(int userid, int requesterId) throws Exception {
+    public void blockRequest(int userid, int requesterId) throws SQLException {
         try {
             connect();
             preparedStatement = connect
@@ -411,7 +402,7 @@ public class MySqlConnection {
             preparedStatement.setInt(1,userid);
             preparedStatement.setInt(2,requesterId);
             preparedStatement.executeUpdate();            
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             throw ex;
         } finally {
             close();
