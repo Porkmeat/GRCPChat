@@ -17,7 +17,7 @@ public class Appgui extends Application {
     public void start(Stage stage) throws IOException {
 
         FXMLLoader fxmlLoader = new FXMLLoader(Appgui.class.getResource("loginfxml.fxml"));
-        scene = new Scene(fxmlLoader.load(), 640, 480);
+        scene = new Scene(fxmlLoader.load(), 860, 608);
         
         //send client to controller
         LoginController controller = fxmlLoader.getController();

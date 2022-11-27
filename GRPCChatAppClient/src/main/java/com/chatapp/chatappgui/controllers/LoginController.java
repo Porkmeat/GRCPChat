@@ -2,14 +2,17 @@ package com.chatapp.chatappgui.controllers;
 
 import com.chatapp.chatappgui.Appgui;
 import com.chatapp.grpcchatappclient.GRPCChatAppClient;
+import com.jfoenix.controls.JFXSpinner;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 /**
@@ -42,33 +45,82 @@ public class LoginController {
     private PasswordField newUserPasswordConfirmField;
 
     @FXML
+    private AnchorPane createAccountPane;
+
+    @FXML
+    private AnchorPane loginPane;
+
+    @FXML
+    private JFXSpinner loadingSpinner;
+
+    @FXML
     private void login() {
-        try {
+
+        loginPane.setDisable(true);
+        loadingSpinner.setVisible(true);
+        new Thread(() -> {
+
             if (client.login(usernameField.getText(), passwordField.getText())) {
                 System.out.println("Connection successful!");
-                switchToMainScene();
+                Platform.runLater(() -> {
+                    try {
+                        switchToMainScene();
+                    } catch (IOException ex) {
+                        Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                });
             } else {
                 System.out.println("Connection failed!");
+                Platform.runLater(() -> {
+                    loadingSpinner.setVisible(false);
+                    loginPane.setDisable(false);
+                });
             }
-        } catch (IOException ex) {
-            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }).start();
     }
 
     @FXML
     private void createUser() {
-        String user = newUsernameField.getText();
-        String pass = newUserPasswordField.getText();
-        if (user.equals(newUserPasswordConfirmField.getText())) {
-            if (client.createUser(user, pass)) {
-                System.out.println("Account created!");
-                usernameField.setText(user);
-                passwordField.setText(pass);
-                login();
-            } else {
-                System.out.println("Failed!");
+        
+        createAccountPane.setDisable(true);
+        loadingSpinner.setVisible(true);
+        new Thread(() -> {
+            
+            String user = newUsernameField.getText();
+            String pass = newUserPasswordField.getText();
+            if (user.equals(newUserPasswordConfirmField.getText())) {
+                if (client.createUser(user, pass)) {
+                    System.out.println("Account created!");
+                    usernameField.setText(user);
+                    passwordField.setText(pass);
+                    Platform.runLater(() -> {
+                        login();
+                    });
+                } else {
+                    System.out.println("Failed!");
+                    Platform.runLater(() -> {
+                        
+                        loadingSpinner.setVisible(false);
+                        createAccountPane.setDisable(false);
+                    });
+
+                }
             }
-        }
+        }).start();
+    }
+
+    @FXML
+    private void closeCreateAccontPane() {
+        createAccountPane.setVisible(false);
+        createAccountPane.setDisable(true);
+        loginPane.setDisable(false);
+    }
+
+    @FXML
+    private void openCreateAccontPane() {
+        createAccountPane.setVisible(true);
+        createAccountPane.setDisable(false);
+        loginPane.setDisable(true);
     }
 
     public void setClient(GRPCChatAppClient client) {
@@ -76,6 +128,7 @@ public class LoginController {
     }
 
     private void switchToMainScene() throws IOException {
+       
         String username = usernameField.getText();
 
         usernameField.clear();
@@ -94,10 +147,10 @@ public class LoginController {
             controller.logoff(stage);
         });
 
-        scene.getStylesheets().add(getClass().getResource("fxml.css").toExternalForm());
+        scene.getStylesheets().add(Appgui.class.getResource("fxml.css").toExternalForm());
 
         stage.setScene(scene);
-        
+
         stage.setMinHeight(600);
         stage.setMinWidth(900);
         stage.show();

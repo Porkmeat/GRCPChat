@@ -8,7 +8,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane id="AnchorPane" fx:id="friendcard" prefWidth="1.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chatapp.chatappgui.FriendsfxmlController">
+<AnchorPane id="AnchorPane" fx:id="friendcard" prefWidth="1.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chatapp.chatappgui.controllers.FriendsfxmlController">
    <children>
       <Circle fx:id="profilepicture" fill="WHITE" layoutX="39.0" layoutY="47.0" radius="25.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="15.0" AnchorPane.topAnchor="7.0" />
       <Label fx:id="usernamelabel" layoutX="83.0" layoutY="14.0" text="Label" AnchorPane.leftAnchor="80.0" AnchorPane.topAnchor="9.0">
