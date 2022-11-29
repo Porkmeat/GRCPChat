@@ -190,7 +190,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
 
         try ( InputStream inputStream = Files.newInputStream(Paths.get(PROFILE_PIC_PATH + friend.getProfilePicture()))) {
             userFriend.setProfilePicture(ByteString.copyFrom(inputStream.readAllBytes()));
-        } catch (IOException ex) {
+        } catch (IOException ex) {      
             userFriend.setProfilePicture(ByteString.EMPTY);
         }
         

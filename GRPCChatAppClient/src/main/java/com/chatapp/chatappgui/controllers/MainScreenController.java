@@ -10,20 +10,19 @@ import com.chatapp.grpcchatappclient.GRPCChatAppClient;
 import com.chatapp.listeners.MessageListener;
 import com.chatapp.listeners.RequestListener;
 import com.chatapp.listeners.StatusListener;
+import com.jfoenix.controls.JFXSpinner;
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -42,13 +41,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Duration;
+import javax.swing.JFileChooser;
 
 public class MainScreenController implements StatusListener, MessageListener, RequestListener, FriendListener {
 
@@ -62,8 +61,6 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     private Circle mainuserimg;
     @FXML
     private ToggleButton usercardtoggle;
-    @FXML
-    private AnchorPane usercard;
     @FXML
     private ListView<Friend> userlist;
     @FXML
@@ -88,6 +85,10 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     private TabPane mainTabPane;
     @FXML
     private ImageView mainchatimg;
+    @FXML
+    private JFXSpinner profilePicSpinner;
+    @FXML
+    private Label profilePicLabel;
 
     public void setupController(GRPCChatAppClient client, String username) {
         mainusername.setText(username);
@@ -97,7 +98,12 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.addMessageListener(this);
         this.client.addFriendListener(this);
         this.client.requestStreams();
-        new Thread(fetchProfilePicture).start();
+        new Thread(() -> {
+            String filePath = client.fetchFile(mainusername.getText() + ".jpg", true);
+            if (!filePath.isEmpty()) {
+                setProfilePicture(new Image(filePath));
+            }
+        }).start();
 
         ObservableList<Friend> friends = FXCollections.observableArrayList(Friend.extractor());
         userlist.setCellFactory((ListView<Friend> userlist1) -> new FriendListCell(client.getTmpFolder()));
@@ -192,29 +198,59 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         usercardtoggle.fire();
     }
 
+//    @FXML
+//    public void openUserCard() {
+//        Duration cycleDuration = Duration.millis(500);
+//        Timeline timeline;
+//        if (usercardtoggle.isSelected()) {
+//            timeline = new Timeline(
+//                    new KeyFrame(cycleDuration,
+//                            new KeyValue(usercard.prefHeightProperty(), 300, Interpolator.EASE_BOTH))
+//            );
+//        } else {
+//            timeline = new Timeline(
+//                    new KeyFrame(cycleDuration,
+//                            new KeyValue(usercard.prefHeightProperty(), 60, Interpolator.EASE_BOTH))
+//            );
+//        }
+//
+//        timeline.play();
+//    }
     @FXML
-    public void openUserCard() {
-        Duration cycleDuration = Duration.millis(500);
-        Timeline timeline;
-        if (usercardtoggle.isSelected()) {
-            timeline = new Timeline(
-                    new KeyFrame(cycleDuration,
-                            new KeyValue(usercard.prefHeightProperty(), 300, Interpolator.EASE_BOTH))
-            );
+    public void openPictureChooser() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose new Profile Picture");
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.jpeg","*.png"));
+
+        File picture = fileChooser.showOpenDialog(null);
+        if (picture != null) {
+            profilePicChange(picture);
         } else {
-            timeline = new Timeline(
-                    new KeyFrame(cycleDuration,
-                            new KeyValue(usercard.prefHeightProperty(), 60, Interpolator.EASE_BOTH))
-            );
+            System.out.println("Wrong file or no file.");
         }
 
-        timeline.play();
     }
 
-    @FXML
-    public void uploadProfilePicture() {
-        client.uploadProfilePicture("");
+    private void profilePicChange(File picture) {
+        profilePicSpinner.setVisible(true);
+        profilePicLabel.setVisible(false);
+        mainuserimg.setOpacity(0.5);
+        new Thread(() -> {
+            try {
+                String thumbnailPath = client.uploadProfilePicture(picture);
+                setProfilePicture(new Image(thumbnailPath));
+            } catch (IOException ex) {
+                Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            Platform.runLater(() -> {
+                profilePicSpinner.setVisible(false);
+                profilePicLabel.setVisible(true);
+                mainuserimg.setOpacity(1);
+            });
+        }).start();
     }
+
 
     @FXML
     public void sendMsg() throws IOException {
@@ -373,17 +409,16 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         });
     }
 
-    Task<Void> fetchProfilePicture = new Task<Void>() {
-        @Override
-        protected Void call() throws Exception {
-            String filePath = client.fetchFile(mainusername.getText() + ".jpg", true);
-            if (!filePath.isEmpty()) {
-                setProfilePicture(new Image(filePath));
-            }
-            return null;
-        }
-    };
-
+//    Task<Void> fetchProfilePicture = new Task<Void>() {
+//        @Override
+//        protected Void call() throws Exception {
+//            String filePath = client.fetchFile(mainusername.getText() + ".jpg", true);
+//            if (!filePath.isEmpty()) {
+//                setProfilePicture(new Image(filePath));
+//            }
+//            return null;
+//        }
+//    };
     public void setProfilePicture(Image image) {
 
         double radius = mainuserimg.getRadius();

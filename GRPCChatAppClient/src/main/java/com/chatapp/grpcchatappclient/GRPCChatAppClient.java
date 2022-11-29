@@ -39,6 +39,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +58,7 @@ import java.util.Iterator;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.coobird.thumbnailator.Thumbnails;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -178,39 +181,41 @@ public class GRPCChatAppClient {
         }
     }
 
-    public void uploadProfilePicture(String filePath) {
+    public String uploadProfilePicture(File picture) throws IOException {
 
-        try {
-            StreamObserver<FileUploadRequest> streamObserver = this.fileStub.fileUpload(new FileUploadObserver());
+        String fileName = UUID.randomUUID().toString() + ".jpg";
 
-// file for testing
-            Path path = Paths.get("D:\\Documents\\NetBeansProjects\\GRCPChat\\GRPCChatAppClient\\src\\main\\resources\\com\\chatapp\\chatappgui\\phantom-of-the-opera-mask-22876.jpg");
+        Thumbnails.of(picture)
+                .size(100, 100)
+                .toFile(new File(tmpFolder + "/" + fileName));
+
+        StreamObserver<FileUploadRequest> streamObserver = this.fileStub.fileUpload(new FileUploadObserver());
+       
+        Path path = Paths.get(tmpFolder + "/" + fileName);
 
 // build metadata
-            FileUploadRequest metadata = FileUploadRequest.newBuilder()
-                    .setMetadata(MetaData.newBuilder()
-                            .setToken(JWToken)
-                            .setFileType(FilenameUtils.getExtension(path.toString()))
-                            .setIsProfilePic(true))
-                    .build();
-            streamObserver.onNext(metadata);
+        FileUploadRequest metadata = FileUploadRequest.newBuilder()
+                .setMetadata(MetaData.newBuilder()
+                        .setToken(JWToken)
+                        .setFileType(FilenameUtils.getExtension(path.toString()))
+                        .setIsProfilePic(true))
+                .build();
+        streamObserver.onNext(metadata);
 // upload file as chunk
-            try ( InputStream inputStream = Files.newInputStream(path)) {
+        try ( InputStream inputStream = Files.newInputStream(path)) {
 
-                byte[] bytes = new byte[4096];
-                int size;
-                while ((size = inputStream.read(bytes)) > 0) {
-                    FileUploadRequest uploadRequest = FileUploadRequest.newBuilder()
-                            .setFileChunk(FileChunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build())
-                            .build();
-                    streamObserver.onNext(uploadRequest);
-                }
-// close the stream
+            byte[] bytes = new byte[4096];
+            int size;
+            while ((size = inputStream.read(bytes)) > 0) {
+                FileUploadRequest uploadRequest = FileUploadRequest.newBuilder()
+                        .setFileChunk(FileChunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build())
+                        .build();
+                streamObserver.onNext(uploadRequest);
             }
-            streamObserver.onCompleted();
-        } catch (IOException ex) {
-            Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, ex);
+// close the stream
         }
+        streamObserver.onCompleted();
+        return tmpFolder + "/" + fileName;
     }
 
     public String fetchFile(String fileName, boolean isProfilePicture) {

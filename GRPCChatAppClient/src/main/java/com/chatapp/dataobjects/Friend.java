@@ -4,6 +4,8 @@
  */
 package com.chatapp.dataobjects;
 
+
+import java.io.File;
 import java.time.LocalDateTime;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
@@ -36,7 +38,7 @@ public class Friend implements Comparable<Friend>{
         this.lastMsg = lastMsg;
         this.timestamp = timestamp;
         this.isOnline.set(false);
-        this.profilePicture = new Image("D:\\Documents\\NetBeansProjects\\GRCPChat\\GRPCChatAppClient\\src\\main\\resources\\com\\chatapp\\chatappgui\\whitecoat_seal_T3506.jpg");
+        this.profilePicture = new Image(new File("src/main/resources/defaults/default.jpg").toURI().toString());
 
     }
     

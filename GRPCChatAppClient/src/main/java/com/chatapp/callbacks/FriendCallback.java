@@ -36,10 +36,10 @@ public class FriendCallback implements StreamObserver<UserFriend> {
     @Override
     public void onNext(UserFriend user) {
 
+        
         var friend = new Friend(user.getUser().getUsername(), user.getUser().getUserId(),
                 user.getAlias(), user.getIsSender(), user.getUnseenChats(), user.getLastMsg(), LocalDateTime.now());
 
-        
         if (!user.getProfilePicture().isEmpty()) {
             File profilePicture = new File (tmpFolder + "/" + user.getUser().getUsername() + ".jpg");
             try {
