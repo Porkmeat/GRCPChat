@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXSpinner?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
@@ -47,7 +48,7 @@
                         </Label>
                         <Separator layoutX="8.0" layoutY="62.0" prefHeight="0.0" prefWidth="827.0" AnchorPane.bottomAnchor="-3.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" />
                         <ToggleButton fx:id="usercardtoggle" focusTraversable="false" layoutX="171.0" layoutY="18.0" mnemonicParsing="false" visible="false" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                        <Label fx:id="profilePicLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="16.0" layoutY="22.0" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" onMouseClicked="#openPictureChooser" prefHeight="50.0" prefWidth="50.0" text="Change Picture " textAlignment="CENTER" wrapText="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                        <Label fx:id="profilePicLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="16.0" layoutY="22.0" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" onMouseClicked="#openPictureChooser" opacity="0.0" prefHeight="50.0" prefWidth="50.0" text="Change Picture " textAlignment="CENTER" wrapText="true" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
                            <font>
                               <Font name="System Bold" size="12.0" />
                            </font>
@@ -123,7 +124,15 @@
                               <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
                            </padding>
                         </TextArea>
-                        <Button fx:id="sendbutton" contentDisplay="GRAPHIC_ONLY" defaultButton="true" layoutX="519.0" layoutY="26.0" mnemonicParsing="false" onAction="#sendMsg" prefHeight="25.0" prefWidth="26.0" AnchorPane.rightAnchor="15.0" />
+                        <JFXButton fx:id="sendbutton" alignment="CENTER" buttonType="RAISED" defaultButton="true" graphicTextGap="0.0" layoutX="493.0" layoutY="25.0" maxHeight="45.0" maxWidth="37.0" onAction="#sendMsg" prefHeight="45.0" prefWidth="37.0" text="&gt;" AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="15.0">
+                           <font>
+                              <Font name="System Bold" size="20.0" />
+                           </font>
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                        </JFXButton>
+                        <JFXButton layoutX="14.0" layoutY="25.0" onAction="#openFileChooser" text="Send File" AnchorPane.leftAnchor="10.0" />
                      </children>
                   </AnchorPane>
                </bottom>

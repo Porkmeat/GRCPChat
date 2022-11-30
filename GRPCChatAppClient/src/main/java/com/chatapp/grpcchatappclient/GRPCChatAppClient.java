@@ -18,15 +18,17 @@ import com.chatapp.chat.SendMessageRequest;
 import com.chatapp.dataobjects.Friend;
 import com.chatapp.common.GetRequest;
 import com.chatapp.common.User;
-import com.chatapp.file.FileChunk;
-import com.chatapp.file.FileDownloadRequest;
-import com.chatapp.file.FileDownloadResponse;
-import com.chatapp.file.FileServiceGrpc;
-import com.chatapp.file.FileUploadRequest;
-import com.chatapp.file.MetaData;
+import com.chatapp.dataobjects.Chat;
+import com.chatapp.filetransfer.FileChunk;
+import com.chatapp.filetransfer.FileDownloadRequest;
+import com.chatapp.filetransfer.FileDownloadResponse;
+import com.chatapp.filetransfer.FileServiceGrpc;
+import com.chatapp.filetransfer.FileUploadRequest;
+import com.chatapp.filetransfer.MetaData;
 import com.chatapp.friends.AnswerRequest;
 import com.chatapp.friends.FriendManagingServiceGrpc;
 import com.chatapp.friends.FriendRequest;
+import com.chatapp.listeners.FileListener;
 import com.chatapp.login.LoginRequest;
 import com.chatapp.login.LoginServiceGrpc;
 import com.chatapp.login.ServerResponse;
@@ -39,7 +41,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import java.awt.image.BufferedImage;
 import java.io.File;
 
 import java.io.IOException;
@@ -76,6 +77,7 @@ public class GRPCChatAppClient {
     private final ArrayList<StatusListener> statusListeners = new ArrayList<>();
     private final ArrayList<MessageListener> messageListeners = new ArrayList<>();
     private final ArrayList<FriendListener> friendListeners = new ArrayList<>();
+    private final ArrayList<FileListener> fileListeners = new ArrayList<>();
     private LoginServiceGrpc.LoginServiceBlockingStub loginBlockingStub;
     private StatusServiceGrpc.StatusServiceStub statusStub;
     private ChatServiceGrpc.ChatServiceStub chatStub;
@@ -181,7 +183,7 @@ public class GRPCChatAppClient {
         }
     }
 
-    public String uploadProfilePicture(File picture) throws IOException {
+    public void uploadProfilePicture(File picture) throws IOException {
 
         String fileName = UUID.randomUUID().toString() + ".jpg";
 
@@ -189,15 +191,15 @@ public class GRPCChatAppClient {
                 .size(100, 100)
                 .toFile(new File(tmpFolder + "/" + fileName));
 
-        StreamObserver<FileUploadRequest> streamObserver = this.fileStub.fileUpload(new FileUploadObserver());
-       
+        StreamObserver<FileUploadRequest> streamObserver = this.fileStub.fileUpload(new FileUploadObserver(fileListeners, tmpFolder + "/" + fileName));
+
         Path path = Paths.get(tmpFolder + "/" + fileName);
 
 // build metadata
         FileUploadRequest metadata = FileUploadRequest.newBuilder()
                 .setMetadata(MetaData.newBuilder()
                         .setToken(JWToken)
-                        .setFileType(FilenameUtils.getExtension(path.toString()))
+                        .setFileType("jpg")
                         .setIsProfilePic(true))
                 .build();
         streamObserver.onNext(metadata);
@@ -215,14 +217,44 @@ public class GRPCChatAppClient {
 // close the stream
         }
         streamObserver.onCompleted();
-        return tmpFolder + "/" + fileName;
     }
 
-    public String fetchFile(String fileName, boolean isProfilePicture) {
+    public void uploadFile(File file, int friendId, String friendName, Chat chat) throws IOException {
+
+        
+        StreamObserver<FileUploadRequest> streamObserver = this.fileStub.fileUpload(new FileUploadObserver(fileListeners, file.getName(), chat));
+
+        Path path = file.toPath();
+
+        FileUploadRequest metadata = FileUploadRequest.newBuilder()
+                .setMetadata(MetaData.newBuilder()
+                        .setToken(JWToken)
+                        .setFileName(FilenameUtils.getBaseName(path.toString()))
+                        .setFileType(FilenameUtils.getExtension(path.toString()))
+                        .setIsProfilePic(false)
+                        .setReciever(User.newBuilder().setUserId(friendId).setUsername(friendName)))
+                .build();
+        streamObserver.onNext(metadata);
+// upload file as chunk
+        try ( InputStream inputStream = Files.newInputStream(path)) {
+
+            byte[] bytes = new byte[4096];
+            int size;
+            while ((size = inputStream.read(bytes)) > 0) {
+                FileUploadRequest uploadRequest = FileUploadRequest.newBuilder()
+                        .setFileChunk(FileChunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size)).build())
+                        .build();
+                streamObserver.onNext(uploadRequest);
+            }
+        }
+        streamObserver.onCompleted();
+    }
+
+    public String fetchFile(String fileName, String fileType, boolean isProfilePicture) {
         OutputStream writer;
         String filePath = "";
         FileDownloadRequest request = FileDownloadRequest.newBuilder()
-                .setMetadata(MetaData.newBuilder().setToken(JWToken).setFileName(fileName).setIsProfilePic(isProfilePicture))
+                .setMetadata(MetaData.newBuilder().setToken(JWToken).setFileName(fileName).setFileType(fileType).setIsProfilePic(isProfilePicture))
                 .build();
 
         Path saveLocation = Paths.get(tmpFolder);
@@ -326,6 +358,14 @@ public class GRPCChatAppClient {
 
     public void removeStatusListener(StatusListener listener) {
         statusListeners.remove(listener);
+    }
+    
+    public void addFileListener(FileListener listener) {
+        fileListeners.add(listener);
+    }
+
+    public void removeFileListener(FileListener listener) {
+        fileListeners.remove(listener);
     }
 
     public void addMessageListener(MessageListener listener) {

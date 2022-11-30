@@ -1,9 +1,11 @@
 syntax = "proto3";
 
-package file;
+import "common.proto";
+
+package filetransfer;
 
 option java_multiple_files = true;
-option java_package = "com.chatapp.file";
+option java_package = "com.chatapp.filetransfer";
 
 service FileService {
   rpc FileUpload(stream FileUploadRequest) returns(FileUploadResponse);
@@ -15,6 +17,7 @@ message MetaData {
   string file_name = 2;
   string file_type = 3;
   bool is_profile_pic = 4;
+  common.User reciever = 5;
 }
 
 message FileChunk {

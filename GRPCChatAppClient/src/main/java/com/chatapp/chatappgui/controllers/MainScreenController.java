@@ -7,6 +7,7 @@ import com.chatapp.chatappgui.javafxelements.FriendListCell;
 import com.chatapp.chatappgui.javafxelements.RequestListCell;
 import com.chatapp.listeners.FriendListener;
 import com.chatapp.grpcchatappclient.GRPCChatAppClient;
+import com.chatapp.listeners.FileListener;
 import com.chatapp.listeners.MessageListener;
 import com.chatapp.listeners.RequestListener;
 import com.chatapp.listeners.StatusListener;
@@ -47,9 +48,8 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javax.swing.JFileChooser;
 
-public class MainScreenController implements StatusListener, MessageListener, RequestListener, FriendListener {
+public class MainScreenController implements StatusListener, MessageListener, RequestListener, FriendListener, FileListener {
 
     private GRPCChatAppClient client;
     private int currentChat;
@@ -97,9 +97,10 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.addStatusListener(this);
         this.client.addMessageListener(this);
         this.client.addFriendListener(this);
+        this.client.addFileListener(this);
         this.client.requestStreams();
         new Thread(() -> {
-            String filePath = client.fetchFile(mainusername.getText() + ".jpg", true);
+            String filePath = client.fetchFile(mainusername.getText(),".jpg", true);
             if (!filePath.isEmpty()) {
                 setProfilePicture(new Image(filePath));
             }
@@ -193,10 +194,10 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         }
     }
 
-    @FXML
-    public void activateUserToggle() {
-        usercardtoggle.fire();
-    }
+//    @FXML
+//    public void activateUserToggle() {
+//        usercardtoggle.fire();
+//    }
 
 //    @FXML
 //    public void openUserCard() {
@@ -221,15 +222,14 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose new Profile Picture");
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.jpeg","*.png"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.jpeg", "*.png"));
 
-        File picture = fileChooser.showOpenDialog(null);
+        File picture = fileChooser.showOpenDialog(mainuserimg.getScene().getWindow());
         if (picture != null) {
             profilePicChange(picture);
         } else {
             System.out.println("Wrong file or no file.");
         }
-
     }
 
     private void profilePicChange(File picture) {
@@ -238,19 +238,81 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         mainuserimg.setOpacity(0.5);
         new Thread(() -> {
             try {
-                String thumbnailPath = client.uploadProfilePicture(picture);
-                setProfilePicture(new Image(thumbnailPath));
+                client.uploadProfilePicture(picture);
             } catch (IOException ex) {
                 Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
             }
-            Platform.runLater(() -> {
-                profilePicSpinner.setVisible(false);
-                profilePicLabel.setVisible(true);
-                mainuserimg.setOpacity(1);
-            });
         }).start();
     }
 
+    @FXML
+    public void openFileChooser() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose File");
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All Files", "*.*"));
+        Friend friend = userlist.getSelectionModel().getSelectedItem();
+
+        File file = fileChooser.showOpenDialog(mainuserimg.getScene().getWindow());
+
+        if (file != null) {
+            System.out.println(file.length());
+            if (file.length() / (1024 * 1024) < 20) {
+                sendFile(file, friend);
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Chosen File is too big");
+                alert.setContentText("Choose a file under 20Mb");
+                alert.show();
+            }
+        } else {
+            System.out.println("Wrong file or no file.");
+        }
+    }
+
+    private void sendFile(File file, Friend reciever) {
+        String message = "Sending File: " + file.getName() + "...";
+        LocalDateTime now = LocalDateTime.now();
+        Chat newMessage = new Chat(message, true, now);
+        activeChat.getItems().add(newMessage);
+        new Thread(() -> {
+            try {
+                client.uploadFile(file, reciever.getUserId(), reciever.getUsername(), newMessage);
+            } catch (IOException ex) {
+                Platform.runLater(() -> {
+                    String failMessage = file.getName() + " upload failed.";
+                    newMessage.setMessage(failMessage);
+                    reciever.setLastMsg(failMessage);
+                });
+                System.out.println("Error uploading file");
+                Logger.getLogger(MainScreenController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }).start();
+    }
+
+    @Override
+    public void fileSent(Chat chat, boolean success, String fileName) {
+        Platform.runLater(() -> {
+            if (chat != null) {
+                if (success) {
+                    String successMessage = fileName + " sent.";
+                    chat.setMessage(successMessage);
+                } else {
+                    String failMessage = fileName + " upload failed.";
+                    chat.setMessage(failMessage);
+                }
+            } else {
+                if (success) {
+                    setProfilePicture(new Image(fileName));
+                } else {
+                    System.out.println("File upload Failed");
+                }
+                profilePicSpinner.setVisible(false);
+                profilePicLabel.setVisible(true);
+                mainuserimg.setOpacity(1);
+            }
+        });
+    }
 
     @FXML
     public void sendMsg() throws IOException {
@@ -409,17 +471,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         });
     }
 
-//    Task<Void> fetchProfilePicture = new Task<Void>() {
-//        @Override
-//        protected Void call() throws Exception {
-//            String filePath = client.fetchFile(mainusername.getText() + ".jpg", true);
-//            if (!filePath.isEmpty()) {
-//                setProfilePicture(new Image(filePath));
-//            }
-//            return null;
-//        }
-//    };
-    public void setProfilePicture(Image image) {
+    private void setProfilePicture(Image image) {
 
         double radius = mainuserimg.getRadius();
         final double hRad;   // horizontal "radius"

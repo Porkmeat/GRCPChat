@@ -4,13 +4,13 @@
  */
 package com.chatapp.service;
 
-import com.chatapp.file.FileChunk;
-import com.chatapp.file.FileDownloadRequest;
-import com.chatapp.file.FileDownloadResponse;
-import com.chatapp.file.FileServiceGrpc;
-import com.chatapp.file.FileUploadRequest;
-import com.chatapp.file.FileUploadResponse;
-import com.chatapp.file.Status;
+import com.chatapp.filetransfer.FileChunk;
+import com.chatapp.filetransfer.FileDownloadRequest;
+import com.chatapp.filetransfer.FileDownloadResponse;
+import com.chatapp.filetransfer.FileServiceGrpc;
+import com.chatapp.filetransfer.FileUploadRequest;
+import com.chatapp.filetransfer.FileUploadResponse;
+import com.chatapp.filetransfer.Status;
 
 import com.chatapp.grpcchatapp.JWToken;
 
@@ -100,7 +100,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
         if (token.isValid()) {
             try {
                 Path fileLocation = Paths.get(SERVER_BASE_PATH.toString(), (request.getMetadata().getIsProfilePic() ? "/profilepictures" : "/chatfiles"),
-                        "/", request.getMetadata().getFileName());
+                        "/", request.getMetadata().getFileName(),".",request.getMetadata().getFileType());
 
                 try ( InputStream inputStream = Files.newInputStream(fileLocation)) {
 
