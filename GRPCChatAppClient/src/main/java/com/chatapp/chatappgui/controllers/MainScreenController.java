@@ -100,9 +100,11 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.addFileListener(this);
         this.client.requestStreams();
         new Thread(() -> {
-            String filePath = client.fetchFile(mainusername.getText(),"jpg", true);
+            String filePath = client.fetchFile(mainusername.getText(), "jpg", "", true, 0);
             if (!filePath.isEmpty()) {
                 setProfilePicture(new Image(filePath));
+            } else {
+                profilePicLabel.setOpacity(1);
             }
         }).start();
 
@@ -118,7 +120,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                     currentChat = userlist.getSelectionModel().getSelectedItem().getUserId();
                     if (!activeChats.containsKey(currentChat)) {
                         ListView<Chat> newChat = new ListView<>();
-                        newChat.setCellFactory((ListView<Chat> newChat1) -> new ChatListCell());
+                        newChat.setCellFactory((ListView<Chat> newChat1) -> new ChatListCell(MainScreenController.this));
                         activeChats.put(currentChat, newChat);
                         client.fetchMessages(friendUsername, currentChat);
                     }
@@ -198,7 +200,6 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 //    public void activateUserToggle() {
 //        usercardtoggle.fire();
 //    }
-
 //    @FXML
 //    public void openUserCard() {
 //        Duration cycleDuration = Duration.millis(500);
@@ -269,11 +270,34 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         }
     }
 
+    public void downloadFile(String fileName, String fileType, Chat chat) {
+        String fileData = chat.getMessage();
+        chat.setMessage("Downloading " + fileName + "." + fileType + "...");
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialFileName(fileName);
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(".jpg", "*." + fileType));
+        File file = fileChooser.showSaveDialog(mainuserimg.getScene().getWindow());
+        if (file != null) {
+            new Thread(() -> {
+                String downloadDir = client.fetchFile(fileName, fileType, file.getParent(), false, userlist.getSelectionModel().getSelectedItem().getUserId());
+                if (!downloadDir.isEmpty()) {
+                    chat.setMessage( fileName + "." + fileType + " finished downloading.");
+                } else {
+                    chat.setMessage(fileName + "." + fileType + " - Download failed");
+                }
+            }).start();
+        } else {
+            chat.setMessage(fileData);
+            chat.setIsFile(true);
+        }
+    }
+
     private void sendFile(File file, Friend reciever) {
         String message = "Sending File: " + file.getName() + "...";
         LocalDateTime now = LocalDateTime.now();
         Chat newMessage = new Chat(message, true, now);
         activeChat.getItems().add(newMessage);
+        autoScroll();
         new Thread(() -> {
             try {
                 client.uploadFile(file, reciever.getUserId(), reciever.getUsername(), newMessage);
@@ -491,6 +515,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
             vRad = radius;
         }
         Platform.runLater(() -> {
+            profilePicLabel.setOpacity(0);
             mainuserimg.setFill(new ImagePattern(image, -hRad, -vRad, 2 * hRad, 2 * vRad, false));
         });
 

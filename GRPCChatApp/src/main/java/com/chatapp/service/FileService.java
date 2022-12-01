@@ -71,7 +71,6 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
                             fileName = fileUploadRequest.getMetadata().getFileName() + "." + fileUploadRequest.getMetadata().getFileType();
                             isProfilePicture = fileUploadRequest.getMetadata().getIsProfilePic();
                             fileSize = Math.round(fileUploadRequest.getMetadata().getFileSize() * 100.0) / 100.0;
-                            
                             writer = getFilePath(token, fileUploadRequest);
                         } else {
                             status = Status.FAILED;

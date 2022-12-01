@@ -11,6 +11,9 @@ package com.chatapp.chatappgui.javafxelements;
 import com.chatapp.chatappgui.Appgui;
 import com.chatapp.dataobjects.Chat;
 import com.chatapp.chatappgui.controllers.ChatcellfxmlController;
+import com.chatapp.chatappgui.controllers.MainScreenController;
+import com.chatapp.grpcchatappclient.GRPCChatAppClient;
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,6 +24,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 
 /**
  *
@@ -29,6 +33,7 @@ import javafx.scene.layout.HBox;
 public class ChatListCell extends ListCell<Chat> {
 
     private HBox content;
+    private final MainScreenController mainScreenController;
 
     private ChatcellfxmlController controller;
     private AnchorPane bubble;
@@ -43,8 +48,9 @@ public class ChatListCell extends ListCell<Chat> {
         }
     }
 
-    public ChatListCell() {
+    public ChatListCell(MainScreenController mainScreenController) {
         super();
+        this.mainScreenController = mainScreenController;
         bubble = controller.getChatBubble();
         content = new HBox(bubble);
         content.setSpacing(10);
@@ -66,7 +72,19 @@ public class ChatListCell extends ListCell<Chat> {
                 content.setAlignment(Pos.CENTER);
                 bubble = controller.getChatBubble();
             } else {
-                controller.setMessageText(item.getMessage());
+                if (item.IsFile()) {
+                    String[] fileInfo = item.getMessage().split(" ");
+                    String[] fileName = fileInfo[0].split("\\.");
+                    controller.setMessageText("Download: " + fileInfo[0] + " - " + fileInfo[1] + " MB");
+                    content.setOnMouseClicked(e -> {
+                        item.setIsFile(false);
+                        content.setOnMouseClicked(null);
+                        mainScreenController.downloadFile(fileName[0], fileName[1], item);
+                    });
+                } else {
+                    content.setOnMouseClicked(null);
+                    controller.setMessageText(item.getMessage());
+                }
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
                 controller.setTimestampText(messageTime.format(formatter));
                 if (item.isUserIsSender()) {

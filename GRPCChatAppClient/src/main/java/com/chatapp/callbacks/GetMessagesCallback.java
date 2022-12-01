@@ -50,7 +50,7 @@ public class GetMessagesCallback implements StreamObserver<MessageList> {
 
                 lastMessageTime = messageLocalTime;
 
-                var chat = new Chat(newChat.getMessage(), newChat.getSenderId() != senderId, messageLocalTime);
+                var chat = new Chat(newChat.getMessage(), newChat.getSenderId() != senderId, messageLocalTime, newChat.getIsFile());
 
                 chatList.add(chat);
             }

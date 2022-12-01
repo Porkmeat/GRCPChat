@@ -222,13 +222,12 @@ public class GRPCChatAppClient {
 
     public void uploadFile(File file, int friendId, String friendName, Chat chat) throws IOException {
 
-        
         StreamObserver<FileUploadRequest> streamObserver = this.fileStub.fileUpload(new FileUploadObserver(fileListeners, file.getName(), chat));
 
         Path path = file.toPath();
 
-        double fileSize = file.length()/(1024*1024);
-        
+        double fileSize = (double)file.length() / (1024 * 1024);
+
         FileUploadRequest metadata = FileUploadRequest.newBuilder()
                 .setMetadata(MetaData.newBuilder()
                         .setToken(JWToken)
@@ -254,36 +253,39 @@ public class GRPCChatAppClient {
         streamObserver.onCompleted();
     }
 
-    public String fetchFile(String fileName, String fileType, boolean isProfilePicture) {
+    public String fetchFile(String fileName, String fileType, String saveDir, boolean isProfilePicture,int friendId) {
         OutputStream writer;
         String filePath = "";
         FileDownloadRequest request = FileDownloadRequest.newBuilder()
-                .setMetadata(MetaData.newBuilder().setToken(JWToken).setFileName(fileName).setFileType(fileType).setIsProfilePic(isProfilePicture))
+                .setMetadata(MetaData.newBuilder().setToken(JWToken).setFileName(fileName).setFileType(fileType).setIsProfilePic(isProfilePicture).setFriend(User.newBuilder().setUserId(friendId)))
                 .build();
-
-        Path saveLocation = Paths.get(tmpFolder);
+        
+        Path saveLocation;
+        
+        if (saveDir.isEmpty()) {
+            saveLocation = Paths.get(tmpFolder);
+        } else {
+            saveLocation = Paths.get(saveDir);
+        }
 
         Iterator<FileDownloadResponse> fileChunks;
+
         try {
-            try {
-                fileChunks = fileBlockingStub.fileDownload(request);
-                if (!fileChunks.hasNext()) {
-                    return filePath;
-                }
-                writer = Files.newOutputStream(saveLocation.resolve(fileName), StandardOpenOption.CREATE,
-                        StandardOpenOption.TRUNCATE_EXISTING);
-                while (fileChunks.hasNext()) {
-                    FileDownloadResponse fileChunk = fileChunks.next();
-                    writer.write(fileChunk.getFileChunk().getContent().toByteArray());
-                    writer.flush();
-                }
-                writer.close();
-                filePath = saveLocation.toString() + "\\" + fileName;
-            } catch (StatusRuntimeException e) {
-                Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, e);
+            fileChunks = fileBlockingStub.fileDownload(request);
+            if (!fileChunks.hasNext()) {
+                return filePath;
             }
-        } catch (IOException ex) {
-            Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, ex);
+            writer = Files.newOutputStream(saveLocation.resolve(fileName + "." + fileType), StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
+            while (fileChunks.hasNext()) {
+                FileDownloadResponse fileChunk = fileChunks.next();
+                writer.write(fileChunk.getFileChunk().getContent().toByteArray());
+                writer.flush();
+            }
+            writer.close();
+            filePath = saveLocation.toString() + "\\" + fileName + "." + fileType;
+        } catch (StatusRuntimeException | IOException e) {
+            Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, e);
         }
         return filePath;
     }
@@ -363,7 +365,7 @@ public class GRPCChatAppClient {
     public void removeStatusListener(StatusListener listener) {
         statusListeners.remove(listener);
     }
-    
+
     public void addFileListener(FileListener listener) {
         fileListeners.add(listener);
     }

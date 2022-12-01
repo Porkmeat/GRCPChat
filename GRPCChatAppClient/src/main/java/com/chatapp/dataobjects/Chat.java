@@ -15,17 +15,27 @@ public class Chat {
     private String message;
     private boolean userIsSender;
     private LocalDateTime timestamp;
+    private boolean isFile;
 
     public Chat(String message, boolean userIsSender, LocalDateTime timestamp) {
         this.message = message;
         this.userIsSender = userIsSender;
         this.timestamp = timestamp;
+        this.isFile = false;
+    }
+    
+    public Chat(String message, boolean userIsSender, LocalDateTime timestamp, boolean isFile) {
+        this.message = message;
+        this.userIsSender = userIsSender;
+        this.timestamp = timestamp;
+        this.isFile = isFile;
     }
     
     public Chat(LocalDateTime timestamp) {
         this.message = "";
         this.userIsSender = true;
         this.timestamp = timestamp;
+        this.isFile = false;
     }
 
     public String getMessage() {
@@ -50,6 +60,14 @@ public class Chat {
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public boolean IsFile() {
+        return isFile;
+    }
+
+    public void setIsFile(boolean isFile) {
+        this.isFile = isFile;
     }
             
     
