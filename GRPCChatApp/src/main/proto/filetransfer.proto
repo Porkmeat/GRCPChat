@@ -17,7 +17,8 @@ message MetaData {
   string file_name = 2;
   string file_type = 3;
   bool is_profile_pic = 4;
-  common.User reciever = 5;
+  common.User friend = 5;
+  double file_size = 6;
 }
 
 message FileChunk {

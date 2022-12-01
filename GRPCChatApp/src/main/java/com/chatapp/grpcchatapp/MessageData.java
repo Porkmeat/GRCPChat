@@ -15,12 +15,14 @@ public class MessageData {
     private int senderId;
     private String timestamp;
     private boolean seen;
+    private boolean isFile;
 
-    public MessageData(String message, int senderId, String timestamp, boolean seen) {
+    public MessageData(String message, int senderId, String timestamp, boolean seen, boolean isFile) {
         this.message = message;
         this.senderId = senderId;
         this.timestamp = timestamp;
         this.seen = seen;
+        this.isFile = isFile;
     }
     
     public MessageData(String message, int senderId) {
@@ -60,6 +62,14 @@ public class MessageData {
 
     public void setSeen(boolean seen) {
         this.seen = seen;
+    }
+
+    public boolean isFile() {
+        return isFile;
+    }
+
+    public void setIsFile(boolean isFile) {
+        this.isFile = isFile;
     }
     
     

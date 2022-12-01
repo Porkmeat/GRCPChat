@@ -28,6 +28,7 @@ message ChatMessage {
   string message = 2;
   string timestamp = 3;
   bool seen = 4;
+  bool is_file = 5;
 }
 
 message MessageList {

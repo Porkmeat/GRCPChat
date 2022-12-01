@@ -34,6 +34,7 @@ import com.chatapp.login.LoginServiceGrpc;
 import com.chatapp.login.ServerResponse;
 import com.chatapp.observers.FileUploadObserver;
 import com.chatapp.status.StatusServiceGrpc;
+import com.google.common.primitives.Doubles;
 
 import com.google.protobuf.ByteString;
 
@@ -226,13 +227,16 @@ public class GRPCChatAppClient {
 
         Path path = file.toPath();
 
+        double fileSize = file.length()/(1024*1024);
+        
         FileUploadRequest metadata = FileUploadRequest.newBuilder()
                 .setMetadata(MetaData.newBuilder()
                         .setToken(JWToken)
                         .setFileName(FilenameUtils.getBaseName(path.toString()))
                         .setFileType(FilenameUtils.getExtension(path.toString()))
                         .setIsProfilePic(false)
-                        .setReciever(User.newBuilder().setUserId(friendId).setUsername(friendName)))
+                        .setFileSize(fileSize)
+                        .setFriend(User.newBuilder().setUserId(friendId).setUsername(friendName)))
                 .build();
         streamObserver.onNext(metadata);
 // upload file as chunk
@@ -274,7 +278,7 @@ public class GRPCChatAppClient {
                     writer.flush();
                 }
                 writer.close();
-                filePath = saveLocation.toString() + "/" + fileName;
+                filePath = saveLocation.toString() + "\\" + fileName;
             } catch (StatusRuntimeException e) {
                 Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.SEVERE, null, e);
             }

@@ -100,7 +100,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.addFileListener(this);
         this.client.requestStreams();
         new Thread(() -> {
-            String filePath = client.fetchFile(mainusername.getText(),".jpg", true);
+            String filePath = client.fetchFile(mainusername.getText(),"jpg", true);
             if (!filePath.isEmpty()) {
                 setProfilePicture(new Image(filePath));
             }
@@ -256,7 +256,6 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         File file = fileChooser.showOpenDialog(mainuserimg.getScene().getWindow());
 
         if (file != null) {
-            System.out.println(file.length());
             if (file.length() / (1024 * 1024) < 20) {
                 sendFile(file, friend);
             } else {

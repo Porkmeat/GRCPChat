@@ -56,7 +56,8 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
                     chatMessage.setSenderId(message.getSenderId())
                             .setMessage(message.getMessage())
                             .setTimestamp(message.getTimestamp())
-                            .setSeen(message.isSeen());
+                            .setSeen(message.isSeen())
+                            .setIsFile(message.isFile());
                     response.addMessages(chatMessage.build());
                     chatMessage.clear();
                 }

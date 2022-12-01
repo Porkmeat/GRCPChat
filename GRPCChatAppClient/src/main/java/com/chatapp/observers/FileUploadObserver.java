@@ -45,7 +45,6 @@ public class FileUploadObserver implements StreamObserver<FileUploadResponse> {
         } else if (fileUploadResponse.getStatus() == Status.FAILED) {
             this.success = false;
         }
-        System.out.println(success);
     }
 
     @Override

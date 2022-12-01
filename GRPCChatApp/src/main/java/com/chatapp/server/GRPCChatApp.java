@@ -33,7 +33,7 @@ public class GRPCChatApp {
                 .addService(new FriendManagementService(userObservers, statusObservers))
                 .addService(new ChatService(messageObservers))
                 .addService(new StatusService(statusObservers))
-                .addService(new FileService()).build();
+                .addService(new FileService(messageObservers)).build();
 
         server.start();
 

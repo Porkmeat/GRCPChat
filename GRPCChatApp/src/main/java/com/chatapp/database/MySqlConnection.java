@@ -93,7 +93,7 @@ public class MySqlConnection {
 
     }
     
-    private long generateChatUuid(int id1, int id2) {
+    public static long generateChatUuid(int id1, int id2) {
         return (long)Math.max(id1, id2) << 32 + Math.min(id1, id2);
     }
 
@@ -218,7 +218,8 @@ public class MySqlConnection {
                     .prepareStatement("SELECT message_text, message_user_id,"
                             + "DATE_FORMAT(message_datetime,'%Y-%m-%dT%H:%i:%s') "
                             + "AS message_datetime, "
-                            + "message_seen FROM message "
+                            + "message_seen,"
+                            + "is_file FROM message "
                             + "WHERE chat_uuid = ? ORDER BY message_datetime;");
             
             preparedStatement.setLong(1, chatUuid);
@@ -226,7 +227,7 @@ public class MySqlConnection {
             resultSet = preparedStatement.executeQuery();
             
             while (resultSet.next()) {
-                messages.add(new MessageData(resultSet.getString(1), resultSet.getInt(2), resultSet.getString(3), resultSet.getBoolean(4)));
+                messages.add(new MessageData(resultSet.getString(1), resultSet.getInt(2), resultSet.getString(3), resultSet.getBoolean(4), resultSet.getBoolean(5)));
             }
             return messages;
             
@@ -238,21 +239,21 @@ public class MySqlConnection {
         }
     }
     
-    public static JSONArray convertToJSONArray(ResultSet resultSet)
-            throws Exception {
-        JSONArray jsonArray = new JSONArray();
-        while (resultSet.next()) {
-            JSONObject obj = new JSONObject();
-            int total_rows = resultSet.getMetaData().getColumnCount();
-            for (int i = 0; i < total_rows; i++) {
-                obj.put(resultSet.getMetaData().getColumnLabel(i + 1)
-                        .toLowerCase(), resultSet.getObject(i + 1));
-
-            }
-            jsonArray.put(obj);
-        }
-        return jsonArray;
-    }
+//    public static JSONArray convertToJSONArray(ResultSet resultSet)
+//            throws Exception {
+//        JSONArray jsonArray = new JSONArray();
+//        while (resultSet.next()) {
+//            JSONObject obj = new JSONObject();
+//            int total_rows = resultSet.getMetaData().getColumnCount();
+//            for (int i = 0; i < total_rows; i++) {
+//                obj.put(resultSet.getMetaData().getColumnLabel(i + 1)
+//                        .toLowerCase(), resultSet.getObject(i + 1));
+//
+//            }
+//            jsonArray.put(obj);
+//        }
+//        return jsonArray;
+//    }
 
 
     private void connect() throws SQLException {
@@ -298,6 +299,35 @@ public class MySqlConnection {
             preparedStatement.setString(2, message);
 
             preparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            close();
+        }
+    }
+    
+    public void saveFile(int userid, int recipientid, String fileName, double fileSize) throws SQLException {
+        try {
+            connect();
+            
+            long chatUuid = generateChatUuid(userid, recipientid);
+            
+            preparedStatement = connect
+                    .prepareStatement("INSERT INTO message (message_datetime,message_text,chat_uuid,message_user_id,message_seen, is_file) "
+                            + "VALUES (UTC_TIMESTAMP(),?,"+chatUuid+",?,0,1);");
+            
+            preparedStatement.setString(1, fileName + " " + fileSize);
+            preparedStatement.setInt(2, userid);
+
+            preparedStatement.executeUpdate();
+            
+//            preparedStatement = connect
+//                    .prepareStatement("UPDATE chat SET chat_user_sender = ?, last_message = ?, last_message_time = UTC_TIMESTAMP(), last_message_seen = 0 WHERE chat_uuid = "+chatUuid+";");
+//            
+//            preparedStatement.setInt(1, userid);
+//            preparedStatement.setString(2, message);
+//
+//            preparedStatement.executeUpdate();
         } catch (SQLException ex) {
             throw ex;
         } finally {
