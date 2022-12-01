@@ -37,7 +37,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -59,8 +58,6 @@ public class MainScreenController implements StatusListener, MessageListener, Re
 
     @FXML
     private Circle mainuserimg;
-    @FXML
-    private ToggleButton usercardtoggle;
     @FXML
     private ListView<Friend> userlist;
     @FXML
@@ -109,7 +106,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         }).start();
 
         ObservableList<Friend> friends = FXCollections.observableArrayList(Friend.extractor());
-        userlist.setCellFactory((ListView<Friend> userlist1) -> new FriendListCell(client.getTmpFolder()));
+        userlist.setCellFactory((ListView<Friend> userlist1) -> new FriendListCell());
         userlist.setItems(friends);
 
         userlist.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Friend>() {

@@ -34,7 +34,6 @@ import com.chatapp.login.LoginServiceGrpc;
 import com.chatapp.login.ServerResponse;
 import com.chatapp.observers.FileUploadObserver;
 import com.chatapp.status.StatusServiceGrpc;
-import com.google.common.primitives.Doubles;
 
 import com.google.protobuf.ByteString;
 

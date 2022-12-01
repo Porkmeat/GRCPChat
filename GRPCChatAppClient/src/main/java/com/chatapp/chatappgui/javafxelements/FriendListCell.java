@@ -26,9 +26,8 @@ public class FriendListCell extends ListCell<Friend> {
 
     private AnchorPane content;
     private FriendsfxmlController controller;
-    private final String tmpFolder;
 
-    public FriendListCell(String tmpFolder) {
+    public FriendListCell() {
         super();
         {
             try {
@@ -40,8 +39,6 @@ public class FriendListCell extends ListCell<Friend> {
             }
         }
         content = controller.getFriendcard();
-        this.tmpFolder = tmpFolder;
-
     }
 
     @Override

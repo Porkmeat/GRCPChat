@@ -12,8 +12,6 @@ import com.chatapp.chatappgui.Appgui;
 import com.chatapp.dataobjects.Chat;
 import com.chatapp.chatappgui.controllers.ChatcellfxmlController;
 import com.chatapp.chatappgui.controllers.MainScreenController;
-import com.chatapp.grpcchatappclient.GRPCChatAppClient;
-import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +22,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.FileChooser;
 
 /**
  *
@@ -32,7 +29,7 @@ import javafx.stage.FileChooser;
  */
 public class ChatListCell extends ListCell<Chat> {
 
-    private HBox content;
+    private final HBox content;
     private final MainScreenController mainScreenController;
 
     private ChatcellfxmlController controller;
