@@ -386,7 +386,11 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
         for (Friend friend : userlist.getItems()) {
             if (friend.getUserId() == fromUser) {
                 Platform.runLater(() -> {
-                    friend.setLastMsg(message.getMessage());
+                    if (!message.isFile()) {
+                        friend.setLastMsg(message.getMessage());
+                    } else {
+                        friend.setLastMsg(friend.getAlias() + " sent a file.");
+                    }
                     friend.setTimestamp(message.getTimestamp());
                     userlist.getItems().sort(Comparator.naturalOrder());
                 });
