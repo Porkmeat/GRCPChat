@@ -9,7 +9,6 @@ import com.chatapp.listeners.FriendListener;
 import com.chatapp.grpcchatappclient.GRPCChatAppClient;
 import com.chatapp.listeners.FileListener;
 import com.chatapp.listeners.MessageListener;
-import com.chatapp.listeners.RequestListener;
 import com.chatapp.listeners.StatusListener;
 import com.jfoenix.controls.JFXSpinner;
 import java.io.File;
@@ -48,7 +47,14 @@ import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-public class MainScreenController implements StatusListener, MessageListener, RequestListener, FriendListener, FileListener {
+/**
+ * FXML Controller class for the main screen. UI is built with JavaFX. All
+ * methods annotated with FXML reffer to UI interactions and all fields
+ * annotated with FXML are UI components.
+ *
+ * @author Mariano Cuneo
+ */
+public class MainScreenController implements StatusListener, MessageListener, FriendListener, FileListener {
 
     private GRPCChatAppClient client;
     private int currentChat;
@@ -87,6 +93,18 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     @FXML
     private Label profilePicLabel;
 
+    /**
+     * Sets up the controller with all necessary user data needed for the UI
+     * after user logs in. This method fires after the log in information was
+     * verified as correct by the server. It adds the controller as a listener
+     * for server updates and then calls for all necessary client-server
+     * streams. It also sets up all necessary UI listeners and factories and
+     * finally requests all of the user's required data.
+     *
+     * @param client the main client that handles non-UI logic and server
+     * interaction.
+     * @param username current user's username.
+     */
     public void setupController(GRPCChatAppClient client, String username) {
         mainusername.setText(username);
         mainuserimg.setStyle(username);
@@ -159,6 +177,12 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         this.client.getFriendsAndRequests();
     }
 
+    /**
+     * Handles user logoff when window is closed. Displays an alert component
+     * for logoff confirmation.
+     *
+     * @param stage current JavaFx stage.
+     */
     public void logoff(Stage stage) {
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -175,48 +199,30 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @Override
-    public void online(String username) {
+    public void online(int userId) {
         for (Friend friend : userlist.getItems()) {
-            if (friend.getUsername().equals(username)) {
+            if (friend.getUserId() == userId) {
                 friend.setIsOnline(true);
             }
         }
     }
 
     @Override
-    public void offline(String username) {
+    public void offline(int userId) {
 
         for (Friend friend : userlist.getItems()) {
-            if (friend.getUsername().equals(username)) {
+            if (friend.getUserId() == userId) {
                 friend.setIsOnline(false);
             }
         }
     }
 
-//    @FXML
-//    public void activateUserToggle() {
-//        usercardtoggle.fire();
-//    }
-//    @FXML
-//    public void openUserCard() {
-//        Duration cycleDuration = Duration.millis(500);
-//        Timeline timeline;
-//        if (usercardtoggle.isSelected()) {
-//            timeline = new Timeline(
-//                    new KeyFrame(cycleDuration,
-//                            new KeyValue(usercard.prefHeightProperty(), 300, Interpolator.EASE_BOTH))
-//            );
-//        } else {
-//            timeline = new Timeline(
-//                    new KeyFrame(cycleDuration,
-//                            new KeyValue(usercard.prefHeightProperty(), 60, Interpolator.EASE_BOTH))
-//            );
-//        }
-//
-//        timeline.play();
-//    }
+    /**
+     * Handles profile picture upload when user clicks on current profile
+     * picture.
+     */
     @FXML
-    public void openPictureChooser() {
+    private void openPictureChooser() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose new Profile Picture");
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
@@ -244,7 +250,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @FXML
-    public void openFileChooser() {
+    private void openFileChooser() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose File");
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
@@ -267,6 +273,16 @@ public class MainScreenController implements StatusListener, MessageListener, Re
         }
     }
 
+    /**
+     * Handles file download attempt when user clicks on a chat object
+     * containing file information. All file information is retrieved from chat
+     * object sent by server. The chat object is updated with the download
+     * status.
+     *
+     * @param fileName name of file to be downloaded.
+     * @param fileType extension of file to be downloaded.
+     * @param chat chat object containing the file's information.
+     */
     public void downloadFile(String fileName, String fileType, Chat chat) {
         String fileData = chat.getMessage();
         chat.setMessage("Downloading " + fileName + "." + fileType + "...");
@@ -278,7 +294,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
             new Thread(() -> {
                 String downloadDir = client.fetchFile(fileName, fileType, file.getParent(), false, userlist.getSelectionModel().getSelectedItem().getUserId());
                 if (!downloadDir.isEmpty()) {
-                    chat.setMessage( fileName + "." + fileType + " finished downloading.");
+                    chat.setMessage(fileName + "." + fileType + " finished downloading.");
                 } else {
                     chat.setMessage(fileName + "." + fileType + " - Download failed");
                 }
@@ -292,7 +308,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     private void sendFile(File file, Friend reciever) {
         String message = "Sending File: " + file.getName() + "...";
         LocalDateTime now = LocalDateTime.now();
-        Chat newMessage = new Chat(message, true, now);
+        Chat newMessage = new Chat(message, now);
         activeChat.getItems().add(newMessage);
         autoScroll();
         new Thread(() -> {
@@ -335,7 +351,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @FXML
-    public void sendMsg() throws IOException {
+    private void sendMsg() {
         if (chatinput.getText() != null && !chatinput.getText().isBlank()) {
             String message = chatinput.getText().trim();
             LocalDateTime now = LocalDateTime.now();
@@ -348,7 +364,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
                 });
             }
 
-            Chat newMessage = new Chat(message, true, now);
+            Chat newMessage = new Chat(message, now);
             Platform.runLater(() -> {
                 activeChat.getItems().add(newMessage);
                 autoScroll();
@@ -402,7 +418,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @FXML
-    public void addFriend() throws IOException {
+    private void addFriend() {
         String friendName = addFriendField.getText();
         client.addFriend(friendName);
         Platform.runLater(() -> {
@@ -427,7 +443,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @FXML
-    public void acceptRequest() {
+    private void acceptRequest() {
         client.respondToRequest(requester, 1);
         System.out.println("Added friend " + requester.getUsername());
         Platform.runLater(() -> {
@@ -439,7 +455,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @FXML
-    public void denyRequest() {
+    private void denyRequest() {
         client.respondToRequest(requester, 2);
         System.out.println("Request denied: " + requester.getUsername());
         Platform.runLater(() -> {
@@ -451,7 +467,7 @@ public class MainScreenController implements StatusListener, MessageListener, Re
     }
 
     @FXML
-    public void blockRequest() {
+    private void blockRequest() {
         client.respondToRequest(requester, 3);
         System.out.println("Blocked user " + requester.getUsername());
         Platform.runLater(() -> {

@@ -4,7 +4,6 @@
  */
 package com.chatapp.dataobjects;
 
-
 import java.io.File;
 import java.time.LocalDateTime;
 import javafx.beans.Observable;
@@ -14,10 +13,11 @@ import javafx.scene.image.Image;
 import javafx.util.Callback;
 
 /**
+ * Object containing other users' data.
  *
  * @author Mariano
  */
-public class Friend implements Comparable<Friend>{
+public class Friend implements Comparable<Friend> {
 
     private String username;
     private int userId;
@@ -27,8 +27,29 @@ public class Friend implements Comparable<Friend>{
     private Image profilePicture;
     private String lastMsg;
     private LocalDateTime timestamp;
+
+    /**
+     * This is a JavaFX property that can be observed in order to update the UI
+     * when it changes.
+     *
+     */
     public final BooleanProperty isOnline = new SimpleBooleanProperty();
 
+    /**
+     * Class Constructor.
+     *
+     * @param username the contact's username.
+     * @param userId the contact's user ID.
+     * @param alias the contact's alias.
+     * @param friendIsSender boolean stating if the last message in the chat was
+     * sent by the contact.
+     * @param unseenChats number of unseen messages in conversation between the
+     * current user and the contact.
+     * @param lastMsg text of the last message in the chat between the current
+     * user and the contact.
+     * @param timestamp date and time of the last message in the chat between
+     * the current user and the contact.
+     */
     public Friend(String username, int userId, String alias, boolean friendIsSender, int unseenChats, String lastMsg, LocalDateTime timestamp) {
         this.username = username;
         this.userId = userId;
@@ -41,7 +62,13 @@ public class Friend implements Comparable<Friend>{
         this.profilePicture = new Image(new File("src/main/resources/defaults/default.jpg").toURI().toString());
 
     }
-    
+
+    /**
+     * Returns a callback for an observable property. This method is used to be
+     * able to observe the <code>isOnline</code> field with JavaFX UI elements.
+     *
+     * @return the callback to observe <code>isOnline</code>
+     */
     public static Callback<Friend, Observable[]> extractor() {
         return (Friend param) -> new Observable[]{param.isOnline};
     }
@@ -70,7 +97,7 @@ public class Friend implements Comparable<Friend>{
         this.alias = alias;
     }
 
-    public boolean isFriendIsSender() {
+    public boolean friendIsSender() {
         return friendIsSender;
     }
 
@@ -102,7 +129,7 @@ public class Friend implements Comparable<Friend>{
         this.timestamp = timestamp;
     }
 
-    public boolean isIsOnline() {
+    public boolean isOnline() {
         return this.isOnline.get();
     }
 
@@ -118,14 +145,15 @@ public class Friend implements Comparable<Friend>{
         this.profilePicture = profilePicture;
     }
 
+    /**
+     * Overwritten compareTo method to sort items by <code>timestamp</code>.
+     *
+     * @param friend2  <code>Friend</code> object to compare.
+     * @return result of the comparison.
+     */
     @Override
     public int compareTo(Friend friend2) {
         return friend2.getTimestamp().compareTo(timestamp);
     }
-
-    
-    
-    
-    
 
 }

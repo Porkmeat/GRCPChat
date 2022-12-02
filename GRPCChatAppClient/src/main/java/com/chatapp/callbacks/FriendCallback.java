@@ -20,37 +20,50 @@ import java.util.logging.Logger;
 import javafx.scene.image.Image;
 
 /**
+ * Callback for gRPC Async <code>UserFriend</code> server stream.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
 public class FriendCallback implements StreamObserver<UserFriend> {
 
     private final ArrayList<FriendListener> friendListeners;
     private final String tmpFolder;
 
+    /**
+     * Class constructor.
+     *
+     * @param friendListeners listeners to be updated on callbacks.
+     * @param tmpFolder directory of temporary folder for current user session.
+     */
     public FriendCallback(ArrayList<FriendListener> friendListeners, String tmpFolder) {
         this.friendListeners = friendListeners;
         this.tmpFolder = tmpFolder;
     }
 
+    /**
+     * Handles incoming user information and generates a <code>Friend</code>
+     * object. This method also saves the friend's profile picture to the
+     * <code>tmpFolder</code> directory if a profile picture is present.
+     * Finally, it notifies the <code>friendListeners</code>.
+     *
+     * @param user  <code>UserFriend</code> message sent by server.
+     */
     @Override
     public void onNext(UserFriend user) {
 
-        
         var friend = new Friend(user.getUser().getUsername(), user.getUser().getUserId(),
                 user.getAlias(), user.getIsSender(), user.getUnseenChats(), user.getLastMsg(), LocalDateTime.now());
 
         if (!user.getProfilePicture().isEmpty()) {
-            File profilePicture = new File (tmpFolder + "/" + user.getUser().getUsername() + ".jpg");
+            File profilePicture = new File(tmpFolder + "/" + user.getUser().getUsername() + ".jpg");
             try {
-                Files.write(user.getProfilePicture().toByteArray(), profilePicture); 
+                Files.write(user.getProfilePicture().toByteArray(), profilePicture);
                 friend.setProfilePicture(new Image(profilePicture.getAbsolutePath()));
             } catch (IOException ex) {
                 Logger.getLogger(FriendCallback.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
-        
+
         friend.setIsOnline(user.getIsOnline());
 
         switch (user.getType()) {

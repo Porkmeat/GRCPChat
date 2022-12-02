@@ -6,7 +6,7 @@ package com.chatapp.chatappgui.javafxelements;
 
 import com.chatapp.chatappgui.Appgui;
 import com.chatapp.dataobjects.Friend;
-import com.chatapp.chatappgui.controllers.FriendsfxmlController;
+import com.chatapp.chatappgui.controllers.FriendCellController;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,17 +16,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.AnchorPane;
 
-
 /**
+ * Custom JavaFX <code>ListCell</code> node for displaying the user's contacts.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
 public class FriendListCell extends ListCell<Friend> {
 
-
     private AnchorPane content;
-    private FriendsfxmlController controller;
+    private FriendCellController controller;
 
+    /**
+     * Class Constructor.
+     */
     public FriendListCell() {
         super();
         {
@@ -41,23 +43,29 @@ public class FriendListCell extends ListCell<Friend> {
         content = controller.getFriendcard();
     }
 
+    /**
+     * Updates the contents of the <code>ListCell</code>.
+     *
+     * @param item   <code>Friend</code> to be displayed.
+     * @param empty boolean stating if the cell is empty.
+     */
     @Override
     protected void updateItem(Friend item, boolean empty) {
         super.updateItem(item, empty);
         if (item != null && !empty) { // <== test for null item and empty parameter
-            
+
             controller.setUsername(item.getAlias());
             controller.setLastMessage(item.getLastMsg());
             LocalDateTime messageTime = item.getTimestamp();
             LocalDateTime now = LocalDateTime.now();
             controller.setTimestamp(setTimeString(now, messageTime));
-            controller.setOnlineStatus(item.isIsOnline());
+            controller.setOnlineStatus(item.isOnline());
             content = controller.getFriendcard();
-            
+
             controller.setProfilePicture(item.getProfilePicture());
-            
+
             setGraphic(content);
-            
+
         } else {
             setGraphic(null);
         }

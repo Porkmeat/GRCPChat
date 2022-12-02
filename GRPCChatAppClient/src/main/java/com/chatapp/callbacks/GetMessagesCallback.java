@@ -17,17 +17,29 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 /**
+ * Callback for gRPC unary Async server call.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
 public class GetMessagesCallback implements StreamObserver<MessageList> {
 
     private final ArrayList<MessageListener> messageListeners;
 
+    /**
+     * Class Constructor.
+     *
+     * @param messageListeners listeners to be updated on callback.
+     */
     public GetMessagesCallback(ArrayList<MessageListener> messageListeners) {
         this.messageListeners = messageListeners;
     }
 
+    /**
+     * Handles server response, genertes <code>Chat</code> objects and notifies
+     * the listeners.
+     *
+     * @param messageList message list returned by server.
+     */
     @Override
     public void onNext(MessageList messageList) {
         int senderId = messageList.getFriendId();
@@ -50,7 +62,7 @@ public class GetMessagesCallback implements StreamObserver<MessageList> {
 
                 lastMessageTime = messageLocalTime;
 
-                var chat = new Chat(newChat.getMessage(), newChat.getSenderId() != senderId, messageLocalTime, newChat.getIsFile());
+                Chat chat = new Chat(newChat.getMessage(), newChat.getSenderId() != senderId, messageLocalTime, newChat.getIsFile());
 
                 chatList.add(chat);
             }

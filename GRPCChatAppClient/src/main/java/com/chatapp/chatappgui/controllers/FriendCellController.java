@@ -17,11 +17,11 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 
 /**
- * FXML Controller class
+ * FXML Controller class for the custom <code>FriendListCell</code>.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
-public class FriendsfxmlController {
+public class FriendCellController {
 
     @FXML
     private Label usernamelabel;
@@ -56,6 +56,12 @@ public class FriendsfxmlController {
         timestamplabel.setText(timestamp);
     }
 
+    /**
+     * Updates the <code>profilepicture</code> UI element to reflect online
+     * status.
+     *
+     * @param isOnline boolean stating the contact's online status.
+     */
     public void setOnlineStatus(boolean isOnline) {
         if (isOnline) {
             profilepicture.setEffect(new DropShadow(BlurType.GAUSSIAN, Color.GREEN, 10, 0, 0, 0));
@@ -64,11 +70,18 @@ public class FriendsfxmlController {
         }
     }
 
+    /**
+     * Sets the profile picture of the contact into the
+     * <code>profilepicture</code> UI element.
+     *
+     * @param image image to be used as profile picture.
+     */
     public void setProfilePicture(Image image) {
 
+        // calculations required for picture to display correctly.
         double radius = profilepicture.getRadius();
-        double hRad = radius;   // horizontal "radius"
-        double vRad = radius;   // vertical "radius"
+        double hRad = radius;
+        double vRad = radius;
         if (image.getWidth() != image.getHeight()) {
             double ratio = image.getWidth() / image.getHeight();
             if (ratio > 1) {

@@ -16,15 +16,14 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 /**
- * FXML Controller class
+ * FXML Controller class for the Log in screen. UI is built with JavaFX. All
+ * methods annotated with FXML reffer to UI interactions and all fields
+ * annotated with FXML are UI components.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
 public class LoginController {
 
-    /**
-     * Initializes the controller class.
-     */
     private GRPCChatAppClient client;
     private Stage stage;
     private Scene scene;
@@ -81,11 +80,11 @@ public class LoginController {
 
     @FXML
     private void createUser() {
-        
+
         createAccountPane.setDisable(true);
         loadingSpinner.setVisible(true);
         new Thread(() -> {
-            
+
             String user = newUsernameField.getText();
             String pass = newUserPasswordField.getText();
             if (user.equals(newUserPasswordConfirmField.getText())) {
@@ -99,7 +98,7 @@ public class LoginController {
                 } else {
                     System.out.println("Failed!");
                     Platform.runLater(() -> {
-                        
+
                         loadingSpinner.setVisible(false);
                         createAccountPane.setDisable(false);
                     });
@@ -123,12 +122,18 @@ public class LoginController {
         loginPane.setDisable(true);
     }
 
+    /**
+     * Passes the client for the controller to be able to interact with.
+     *
+     * @param client the main client that handles non-UI logic and server
+     * interaction.
+     */
     public void setClient(GRPCChatAppClient client) {
         this.client = client;
     }
 
     private void switchToMainScene() throws IOException {
-       
+
         String username = usernameField.getText();
 
         usernameField.clear();
@@ -138,7 +143,6 @@ public class LoginController {
         scene = new Scene(fxmlLoader.load(), 640, 480);
         stage = (Stage) usernameField.getScene().getWindow();
 
-        //send client to controller
         MainScreenController controller = fxmlLoader.getController();
         controller.setupController(client, username);
 

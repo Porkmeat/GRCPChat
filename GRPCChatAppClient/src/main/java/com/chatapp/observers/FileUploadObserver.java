@@ -13,8 +13,9 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
+ * Obsever for server response in Async file upload attempts.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
 public class FileUploadObserver implements StreamObserver<FileUploadResponse> {
 
@@ -23,12 +24,25 @@ public class FileUploadObserver implements StreamObserver<FileUploadResponse> {
     private final String fileName;
     private final Chat chat;
 
+    /**
+     * Default class constructor.
+     *
+     * @param fileListeners listener to pass on upload success or failure.
+     * @param fileName name of uploaded file.
+     * @param chat chat object containing upload status to be updated.
+     */
     public FileUploadObserver(ArrayList<FileListener> fileListeners, String fileName, Chat chat) {
         this.fileListeners = fileListeners;
         this.fileName = fileName;
         this.chat = chat;
     }
-    
+
+    /**
+     * Class constructor with no chat object to be updated.
+     *
+     * @param fileListeners listeners to pass on upload success or failure.
+     * @param fileName name of uploaded file.
+     */
     public FileUploadObserver(ArrayList<FileListener> fileListeners, String fileName) {
         this.fileListeners = fileListeners;
         this.fileName = fileName;
@@ -52,6 +66,9 @@ public class FileUploadObserver implements StreamObserver<FileUploadResponse> {
         Logger.getLogger(FileUploadObserver.class.getName()).info(error.getCause().toString());
     }
 
+    /**
+     * Notifies listeners on upload's success or failure.
+     */
     @Override
     public void onCompleted() {
         for (FileListener listener : fileListeners) {

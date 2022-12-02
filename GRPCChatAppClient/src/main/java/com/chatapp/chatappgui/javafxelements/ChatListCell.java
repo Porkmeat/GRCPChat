@@ -4,13 +4,9 @@
  */
 package com.chatapp.chatappgui.javafxelements;
 
-/**
- *
- * @author julia
- */
 import com.chatapp.chatappgui.Appgui;
 import com.chatapp.dataobjects.Chat;
-import com.chatapp.chatappgui.controllers.ChatcellfxmlController;
+import com.chatapp.chatappgui.controllers.ChatCellController;
 import com.chatapp.chatappgui.controllers.MainScreenController;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -24,15 +20,16 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 
 /**
+ * Custom JavaFX <code>ListCell</code> node for displaying chat messages.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
 public class ChatListCell extends ListCell<Chat> {
 
     private final HBox content;
     private final MainScreenController mainScreenController;
 
-    private ChatcellfxmlController controller;
+    private ChatCellController controller;
     private AnchorPane bubble;
 
     {
@@ -45,6 +42,11 @@ public class ChatListCell extends ListCell<Chat> {
         }
     }
 
+    /**
+     * Class constructor.
+     *
+     * @param mainScreenController the controller for the main screen.
+     */
     public ChatListCell(MainScreenController mainScreenController) {
         super();
         this.mainScreenController = mainScreenController;
@@ -55,13 +57,19 @@ public class ChatListCell extends ListCell<Chat> {
 
     }
 
+    /**
+     * Updates the contents of the <code>ListCell</code>.
+     *
+     * @param item   <code>Chat</code> to be displayed.
+     * @param empty boolean stating if the cell is empty.
+     */
     @Override
     protected void updateItem(Chat item, boolean empty) {
         super.updateItem(item, empty);
-        if (item != null && !empty) { // <== test for null item and empty parameter
+        if (item != null && !empty) {
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime messageTime = item.getTimestamp();
-            if (item.getMessage().isEmpty()) {
+            if (item.getMessage().isEmpty()) { // <-- generates a banner displaying the date in the center.
 
                 controller.setMessageText(setTimeString(now, messageTime));
                 controller.setTimestampText("");
@@ -69,7 +77,7 @@ public class ChatListCell extends ListCell<Chat> {
                 content.setAlignment(Pos.CENTER);
                 bubble = controller.getChatBubble();
             } else {
-                if (item.IsFile()) {
+                if (item.isFile()) { //  <-- code for handling files.
                     String[] fileInfo = item.getMessage().split(" ");
                     String[] fileName = fileInfo[0].split("\\.");
                     controller.setMessageText("Download: " + fileInfo[0] + " - " + fileInfo[1] + " MB");
@@ -84,7 +92,7 @@ public class ChatListCell extends ListCell<Chat> {
                 }
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
                 controller.setTimestampText(messageTime.format(formatter));
-                if (item.isUserIsSender()) {
+                if (item.userIsSender()) { // <-- changes formatting based on message sender.
                     content.setAlignment(Pos.CENTER_RIGHT);
                     controller.setBubbleColor("-fx-background-color: #80deea;");
                 } else {
