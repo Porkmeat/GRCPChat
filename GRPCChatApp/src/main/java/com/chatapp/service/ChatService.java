@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chatapp.service;
 
 import com.chatapp.chat.ChatMessage;
@@ -30,10 +26,19 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
 
     private final ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers;
 
+    /**
+     *
+     * @param messageObservers
+     */
     public ChatService(ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers) {
         this.messageObservers = messageObservers;
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void getMessages(GetChatRequest request, StreamObserver<MessageList> responseObserver) {
         JWToken token = new JWToken(request.getToken());
@@ -70,6 +75,11 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void sendMessage(SendMessageRequest request, StreamObserver<ServiceResponse> responseObserver) {
         JWToken token = new JWToken(request.getToken());
@@ -102,6 +112,11 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void receiveMessage(GetRequest request, StreamObserver<ChatMessage> responseObserver) {
 

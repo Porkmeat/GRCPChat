@@ -43,10 +43,19 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
     private final Path SERVER_BASE_PATH = Paths.get("src/main/resources");
     private final ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers;
     
+    /**
+     *
+     * @param messageObservers
+     */
     public FileService(ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers) {
         this.messageObservers = messageObservers;
     }
     
+    /**
+     *
+     * @param responseObserver
+     * @return
+     */
     @Override
     public StreamObserver<FileUploadRequest> fileUpload(StreamObserver<FileUploadResponse> responseObserver) {
         return new StreamObserver<FileUploadRequest>() {
@@ -128,6 +137,11 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
         };
     }
     
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void fileDownload(FileDownloadRequest request, StreamObserver<FileDownloadResponse> responseObserver) {
         

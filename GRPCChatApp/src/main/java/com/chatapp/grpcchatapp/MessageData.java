@@ -1,35 +1,33 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chatapp.grpcchatapp;
 
-
 /**
+ * Object containing message data.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
 public class MessageData {
-    
+
     private String message;
     private int senderId;
     private String timestamp;
     private boolean seen;
     private boolean isFile;
 
+    /**
+     * Class Constructor.
+     *
+     * @param message message text.
+     * @param senderId message sender's user ID.
+     * @param timestamp message time stamp.
+     * @param seen boolean stating if message has been seen by reciever.
+     * @param isFile boolean stating if message is file information.
+     */
     public MessageData(String message, int senderId, String timestamp, boolean seen, boolean isFile) {
         this.message = message;
         this.senderId = senderId;
         this.timestamp = timestamp;
         this.seen = seen;
         this.isFile = isFile;
-    }
-    
-    public MessageData(String message, int senderId) {
-        this.message = message;
-        this.senderId = senderId;
-        this.timestamp = "";
-        this.seen = false;
     }
 
     public String getMessage() {
@@ -71,6 +69,5 @@ public class MessageData {
     public void setIsFile(boolean isFile) {
         this.isFile = isFile;
     }
-    
-    
+
 }

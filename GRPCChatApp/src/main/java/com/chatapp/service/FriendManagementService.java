@@ -38,11 +38,21 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
     private final ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
     private final String PROFILE_PIC_PATH = "src/main/resources/profilepictures/";
 
+    /**
+     *
+     * @param userObservers
+     * @param statusObservers
+     */
     public FriendManagementService(ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers, ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
         this.userObservers = userObservers;
         this.statusObservers = statusObservers;
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void setFriendship(AnswerRequest request, StreamObserver<ServiceResponse> responseObserver) {
         JWToken token = new JWToken(request.getToken());
@@ -97,6 +107,11 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
         responseObserver.onCompleted();
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void getFriendsAndRequests(GetRequest request, StreamObserver<ServiceResponse> responseObserver) {
         JWToken token = new JWToken(request.getToken());
@@ -125,6 +140,11 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
         responseObserver.onCompleted();
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void recieveUsers(GetRequest request, StreamObserver<UserFriend> responseObserver) {
         JWToken token = new JWToken(request.getToken());
@@ -135,6 +155,11 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
         }
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void addFriendship(FriendRequest request, StreamObserver<ServiceResponse> responseObserver) {
         JWToken token = new JWToken(request.getToken());
@@ -204,7 +229,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
             }
             case FRIEND -> {
                 userFriend.setLastMsg(friend.getLastMsg())
-                        .setIsSender(friend.isIsSender())
+                        .setIsSender(friend.isSender())
                         .setTimestamp(friend.getTimestamp())
                         .setUnseenChats(friend.getUnseenChats())
                         .setIsOnline(userObservers.containsKey(friend.getUser().getUserId()));

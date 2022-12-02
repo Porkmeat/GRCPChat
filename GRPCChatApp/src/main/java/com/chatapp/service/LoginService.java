@@ -33,6 +33,12 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
     private final ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers;
     private final ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
 
+    /**
+     *
+     * @param messageObservers
+     * @param userObservers
+     * @param statusObservers
+     */
     public LoginService(ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers,
             ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers,
             ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
@@ -42,6 +48,11 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
         this.statusObservers = statusObservers;
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void logout(GetRequest request, StreamObserver<ServerResponse> responseObserver) {
         JWToken token = new JWToken(request.getToken());
@@ -91,6 +102,11 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void login(LoginRequest request, StreamObserver<ServerResponse> responseObserver) {
         String username = request.getUsername();
@@ -114,6 +130,11 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void createAccount(LoginRequest request, StreamObserver<ServerResponse> responseObserver) {
         String username = request.getUsername();

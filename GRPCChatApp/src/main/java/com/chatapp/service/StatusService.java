@@ -25,10 +25,19 @@ public class StatusService extends StatusServiceGrpc.StatusServiceImplBase {
 
     private final ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
 
+    /**
+     *
+     * @param statusObservers
+     */
     public StatusService(ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
         this.statusObservers = statusObservers;
     }
 
+    /**
+     *
+     * @param request
+     * @param responseObserver
+     */
     @Override
     public void receiveStatus(GetRequest request, StreamObserver<StatusUpdate> responseObserver) {
         JWToken token = new JWToken(request.getToken());

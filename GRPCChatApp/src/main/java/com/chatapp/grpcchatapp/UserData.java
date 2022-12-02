@@ -1,18 +1,21 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chatapp.grpcchatapp;
 
 /**
- *
- * @author Mariano
+ * Object containing basic user information.
+ * 
+ * @author Mariano Cuneo
  */
 public class UserData {
     
     private String username;
     private int userId;
 
+    /**
+     * Class constructor.
+     * 
+     * @param username user's username.
+     * @param userId user's ID.
+     */
     public UserData(String username, int userId) {
         this.username = username;
         this.userId = userId;

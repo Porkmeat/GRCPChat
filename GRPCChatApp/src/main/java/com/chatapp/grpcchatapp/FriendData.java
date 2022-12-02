@@ -1,15 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chatapp.grpcchatapp;
 
 import com.chatapp.friends.UserFriend;
 
 
 /**
- *
- * @author Mariano
+ * Object containing friend data.
+ * 
+ * @author Mariano Cuneo
  */
 public class FriendData {
     
@@ -22,7 +19,18 @@ public class FriendData {
     private String timestamp;
     private UserFriend.Type type;
    
-
+    /**
+     * Class Constructor.
+     * 
+     * @param user <code>UserData</code> object containing the username and user ID.
+     * @param alias user's alias, default is the same as the username.
+     * @param isSender boolean stating if user is sender of <code>lastMst</code>.
+     * @param profilePicture string containing the name of the file containing the user's profile picture, default is an empty String.
+     * @param lastMsg last message sent in chat.
+     * @param timestamp time stamp of <code>lastMsg</code>.
+     * @param unseenChats number of unseen messages in chat.
+     * @param type can be FRIEND or REQUEST.
+     */
     public FriendData(UserData user, String alias, boolean isSender, String profilePicture, String lastMsg, String timestamp, int unseenChats, UserFriend.Type type) {
         this.user = user;
         this.alias = alias;
@@ -50,7 +58,7 @@ public class FriendData {
         this.alias = alias;
     }
 
-    public boolean isIsSender() {
+    public boolean isSender() {
         return isSender;
     }
 
@@ -97,9 +105,4 @@ public class FriendData {
     public void setType(UserFriend.Type type) {
         this.type = type;
     }
-
-    
-
-    
-
 }

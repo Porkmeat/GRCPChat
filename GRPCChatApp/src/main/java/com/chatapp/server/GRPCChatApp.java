@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chatapp.server;
 
 import com.chatapp.chat.ChatMessage;
@@ -19,17 +15,24 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *
- * @author maria
+ * Server's Main Class.
+ * This server uses a gRPC protocol for all calls.
+ * 
+ * @author Mariano Cuneo.
  */
 public class GRPCChatApp {
 
+    private static final int SERVER_PORT = 8818;
+    /**
+     * Creates all required shared objects and starts up the server.
+     * 
+     */
     public static void main(String args[]) throws IOException, InterruptedException {
         ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers = new ConcurrentHashMap<>();
         ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers = new ConcurrentHashMap<>();
         ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers = new ConcurrentHashMap<>();
 
-        Server server = ServerBuilder.forPort(8818).addService(new LoginService(messageObservers, userObservers, statusObservers))
+        Server server = ServerBuilder.forPort(SERVER_PORT).addService(new LoginService(messageObservers, userObservers, statusObservers))
                 .addService(new FriendManagementService(userObservers, statusObservers))
                 .addService(new ChatService(messageObservers))
                 .addService(new StatusService(statusObservers))

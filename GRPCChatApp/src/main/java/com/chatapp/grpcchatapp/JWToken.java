@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chatapp.grpcchatapp;
 
 import com.chatapp.service.LoginService;
@@ -17,8 +13,9 @@ import javax.crypto.spec.SecretKeySpec;
 import org.json.JSONObject;
 
 /**
+ * Object to generate and decode JWTokens.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
 public class JWToken {
 
@@ -28,17 +25,37 @@ public class JWToken {
     private final String encodedPayload;
     private final String encodedSignature;
 
+    /**
+     * Default Class Constructor. This constructor is used to generate a new
+     * JWToken after a successful login.
+     *
+     * @param username successful login's username.
+     * @param userId successful login's user ID.
+     */
     public JWToken(String username, int userId) {
         this.encodedHeader = encode(JWT_HEADER.getBytes());
         this.encodedPayload = generatePayload(username, userId);
         this.encodedSignature = hmacSha256(encodedHeader + "." + encodedPayload, secret);
     }
 
+    /**
+     * Class constructor from encoded String. This constructor is used to
+     * generate a JWToken Object from a client provided token String. If the
+     * provided String structure is not as expected, generates a failed token.
+     *
+     * @param incomingToken encoded string provided by client.
+     */
     public JWToken(String incomingToken) {
         String[] tokenParts = incomingToken.split("\\.");
-        this.encodedHeader = tokenParts[0];
-        this.encodedPayload = tokenParts[1];
-        this.encodedSignature = tokenParts[2];
+        if (tokenParts.length == 3) {
+            this.encodedHeader = tokenParts[0];
+            this.encodedPayload = tokenParts[1];
+            this.encodedSignature = tokenParts[2];
+        } else {
+            this.encodedHeader = "wrong";
+            this.encodedPayload = "wrong";
+            this.encodedSignature = "wrong";
+        }
     }
 
     private String generatePayload(String username, int userId) {
@@ -73,22 +90,37 @@ public class JWToken {
             return null;
         }
     }
-    
+
+    /**
+     * Verifies the token signature.
+     * 
+     * @return <code>true</code> if token is vaild, else <code>false</code>.
+     */
     public boolean isValid() {
         String expectedSignature = hmacSha256(encodedHeader + "." + encodedPayload, secret);
         return expectedSignature.equals(encodedSignature);
     }
 
+    /**
+     * Retrieves the user ID from the token.
+     * 
+     * @return decoded user ID.
+     */
     public int getUserId() {
-         JSONObject payload = new JSONObject(decode(encodedPayload));
+        JSONObject payload = new JSONObject(decode(encodedPayload));
         return payload.getInt("sub");
     }
-    
+
+    /**
+     * Retrieves the username from the token.
+     * 
+     * @return decoded username.
+     */
     public String getUsername() {
         JSONObject payload = new JSONObject(decode(encodedPayload));
         return payload.getString("name");
     }
-    
+
     @Override
     public String toString() {
         return encodedHeader + "." + encodedPayload + "." + encodedSignature;
