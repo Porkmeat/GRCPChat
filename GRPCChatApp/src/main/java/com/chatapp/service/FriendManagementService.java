@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chatapp.service;
 
 import com.chatapp.common.GetRequest;
@@ -29,8 +25,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * gRPC service for handling user contacts and friend requests.
  *
- * @author maria
+ * @author Mariano Cuneo
  */
 public class FriendManagementService extends FriendManagingServiceGrpc.FriendManagingServiceImplBase {
 
@@ -39,9 +36,12 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
     private final String PROFILE_PIC_PATH = "src/main/resources/profilepictures/";
 
     /**
+     * Class constructor.
      *
-     * @param userObservers
-     * @param statusObservers
+     * @param userObservers contains all currently active
+     * <code>FriendManagementService</code> streams.
+     * @param statusObservers contains all currently active
+     * <code>StatusService</code> streams.
      */
     public FriendManagementService(ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers, ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
         this.userObservers = userObservers;
@@ -49,9 +49,12 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
     }
 
     /**
+     * RPC method to reply to a friend request. If the request is accepted, the
+     * requesting user gets notified (if online).
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a valid JWToken, the
+     * requester's user ID and a reply code.
+     * @param responseObserver the call's stream observer.
      */
     @Override
     public void setFriendship(AnswerRequest request, StreamObserver<ServiceResponse> responseObserver) {
@@ -108,9 +111,10 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
     }
 
     /**
+     * RPC method to request all contacts and friend requests.
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a valid JWToken.
+     * @param responseObserver the call's stream observer.
      */
     @Override
     public void getFriendsAndRequests(GetRequest request, StreamObserver<ServiceResponse> responseObserver) {
@@ -141,9 +145,13 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
     }
 
     /**
+     * RPC method to request a long-lived stream to be started. This method
+     * starts a long-lived stream and adds it to <code>userObservers</code> for
+     * later access.
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a valid JWToken.
+     * @param responseObserver the call's stream observer for the long-lived
+     * stream.
      */
     @Override
     public void recieveUsers(GetRequest request, StreamObserver<UserFriend> responseObserver) {
@@ -156,9 +164,12 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
     }
 
     /**
+     * RPC method to send friend request. The requested user gets notified (if
+     * online).
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a valid JWToken and
+     * the requested user's user ID.
+     * @param responseObserver the call's stream observer.
      */
     @Override
     public void addFriendship(FriendRequest request, StreamObserver<ServiceResponse> responseObserver) {
@@ -205,7 +216,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
         responseObserver.onCompleted();
     }
 
-    private UserFriend generateUserFriend(FriendData friend)  {
+    private UserFriend generateUserFriend(FriendData friend) {
         UserFriend.Builder userFriend = UserFriend.newBuilder();
         userFriend.setUser(User.newBuilder()
                 .setUsername(friend.getUser().getUsername())
@@ -215,10 +226,10 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
 
         try ( InputStream inputStream = Files.newInputStream(Paths.get(PROFILE_PIC_PATH + friend.getProfilePicture()))) {
             userFriend.setProfilePicture(ByteString.copyFrom(inputStream.readAllBytes()));
-        } catch (IOException ex) {      
+        } catch (IOException ex) {
             userFriend.setProfilePicture(ByteString.EMPTY);
         }
-        
+
         switch (friend.getType()) {
             case REQUEST -> {
                 userFriend.setLastMsg("")

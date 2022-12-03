@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chatapp.service;
 
 import com.chatapp.chat.ChatMessage;
@@ -35,26 +31,35 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * gRPC service for handling file uploads and downloads.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
 public class FileService extends FileServiceGrpc.FileServiceImplBase {
-    
+
     private final Path SERVER_BASE_PATH = Paths.get("src/main/resources");
     private final ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers;
-    
+
     /**
+     * Class constructor.
      *
-     * @param messageObservers
+     * @param messageObservers contains all currently active
+     * <code>ChatService</code> streams.
      */
     public FileService(ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers) {
         this.messageObservers = messageObservers;
     }
-    
+
     /**
+     * RPC method to request a file upload. The client must first send a
+     * <code>Metadata</code> message containing a valid JWToken and all relevant
+     * file data. Afterwards the client streams <code>FileChunk</code> messages
+     * containing the file's bytes. For user to user files, the reciever is
+     * notified (if online) and a reference to the file is saved on the
+     * database.
      *
-     * @param responseObserver
-     * @return
+     * @param responseObserver the call's stream observer.
+     * @return observer for client's message stream.
      */
     @Override
     public StreamObserver<FileUploadRequest> fileUpload(StreamObserver<FileUploadResponse> responseObserver) {
@@ -68,7 +73,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
             int friendId;
             String fileName;
             double fileSize;
-            
+
             @Override
             public void onNext(FileUploadRequest fileUploadRequest) {
                 try {
@@ -97,13 +102,13 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
                     this.onError(e);
                 }
             }
-            
+
             @Override
             public void onError(Throwable throwable) {
                 status = Status.FAILED;
                 this.onCompleted();
             }
-            
+
             @Override
             public void onCompleted() {
                 if (writer != null) {
@@ -118,7 +123,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
                         Logger.getLogger(FileService.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     if (messageObservers.containsKey(friendId)) {
-                        
+
                         ChatMessage.Builder chatMessage = ChatMessage.newBuilder();
                         chatMessage.setSenderId(validToken.getUserId())
                                 .setMessage(fileName + " " + fileSize)
@@ -136,29 +141,32 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
             }
         };
     }
-    
+
     /**
+     * RPC method to request a file download. If the file exists, it is chuncked
+     * and streamed to the client.
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a valid JWToken and
+     * all relevant file information.
+     * @param responseObserver the call's stream observer.
      */
     @Override
     public void fileDownload(FileDownloadRequest request, StreamObserver<FileDownloadResponse> responseObserver) {
-        
+
         JWToken token = new JWToken(request.getMetadata().getToken());
         if (token.isValid()) {
             try {
                 Path fileLocation;
                 if (request.getMetadata().getIsProfilePic()) {
                     fileLocation = Paths.get(SERVER_BASE_PATH.toString(), "/profilepictures/",
-                            token.getUsername()+ "."+ request.getMetadata().getFileType());
+                            token.getUsername() + "." + request.getMetadata().getFileType());
                 } else {
                     long chatUUID = MySqlConnection.generateChatUuid(token.getUserId(), request.getMetadata().getFriend().getUserId());
                     fileLocation = Paths.get(SERVER_BASE_PATH.toString(), "/chatfiles/" + chatUUID,
-                             request.getMetadata().getFileName() + "." + request.getMetadata().getFileType());
+                            request.getMetadata().getFileName() + "." + request.getMetadata().getFileType());
                 }
                 try ( InputStream inputStream = Files.newInputStream(fileLocation)) {
-                    
+
                     byte[] bytes = new byte[4 * 1024];
                     int size;
                     while ((size = inputStream.read(bytes)) > 0) {
@@ -166,7 +174,6 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
                                 .setFileChunk(FileChunk.newBuilder().setContent(ByteString.copyFrom(bytes, 0, size))).build();
                         responseObserver.onNext(fileChunk);
                     }
-// close the stream
                 }
                 responseObserver.onCompleted();
             } catch (IOException ex) {
@@ -175,10 +182,10 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
             }
         }
     }
-    
+
     private OutputStream getFilePath(JWToken token, FileUploadRequest request) throws IOException {
         boolean isProfilePicture = request.getMetadata().getIsProfilePic();
-        
+
         Path saveLocation;
         if (request.getMetadata().getIsProfilePic()) {
             saveLocation = Paths.get(SERVER_BASE_PATH.toString(), "/profilepictures");
@@ -188,25 +195,25 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
             // create new dir in chatfiles with chatuid
             Files.createDirectories(saveLocation);
         }
-        
+
         String fileName = (isProfilePicture ? token.getUsername() : request.getMetadata().getFileName())
                 + "." + request.getMetadata().getFileType();
-        
+
         return Files.newOutputStream(saveLocation.resolve(fileName), StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
     }
-    
+
     private void writeFile(OutputStream writer, ByteString content) throws IOException {
         writer.write(content.toByteArray());
         writer.flush();
     }
-    
+
     private void closeFile(OutputStream writer) {
         try {
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.getLogger(FileService.class.getName()).log(Level.SEVERE, null, e);
         }
     }
-    
+
 }

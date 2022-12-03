@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chatapp.service;
 
 import com.chatapp.chat.ChatMessage;
@@ -24,8 +20,10 @@ import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 
 /**
+ * gRPC service for handling logins and logouts. This service is also used to
+ * create new users.
  *
- * @author maria
+ * @author Mariano Cuneo
  */
 public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
 
@@ -34,10 +32,14 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
     private final ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
 
     /**
+     * Class Constructor.
      *
-     * @param messageObservers
-     * @param userObservers
-     * @param statusObservers
+     * @param messageObservers contains all currently active
+     * <code>ChatService</code> streams.
+     * @param userObservers contains all currently active
+     * <code>FriendManagementService</code> streams.
+     * @param statusObservers contains all currently active
+     * <code>StatusService</code> streams.
      */
     public LoginService(ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers,
             ConcurrentHashMap<Integer, StreamObserver<UserFriend>> userObservers,
@@ -49,9 +51,11 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
     }
 
     /**
+     * RPC method to call for a logout. This method closes all streams mapped to
+     * the user and notifies other users of the offline status change.
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a valid JWToken.
+     * @param responseObserver the call's stream observer.
      */
     @Override
     public void logout(GetRequest request, StreamObserver<ServerResponse> responseObserver) {
@@ -78,7 +82,7 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
             StatusUpdate statusUpdate = StatusUpdate.newBuilder()
                     .setUser(User.newBuilder().setUsername(username).setUserId(userId))
                     .setStatus(StatusUpdate.Status.OFFLINE).build();
-            
+
             try {
                 ArrayList<Integer> friendList = database.getFriendList(userId);
                 for (int friend : friendList) {
@@ -93,7 +97,7 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
                 response.setToken("Internal error");
                 response.setResponseCode(0);
             }
-            
+
         } else {
             response.setToken("Verification failed");
             response.setResponseCode(0);
@@ -103,9 +107,13 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
     }
 
     /**
+     * RPC method to request a login. This method verifies the username and
+     * password provided. If the information is correct, it generates a valid
+     * JWToken for the client to use on further calls to the server.
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a username and a
+     * password to be verified.
+     * @param responseObserver the call's stream observer.
      */
     @Override
     public void login(LoginRequest request, StreamObserver<ServerResponse> responseObserver) {
@@ -131,24 +139,30 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
     }
 
     /**
+     * RPC method to request a new account to be created. This method first
+     * checks if the username is available, and if so, it generates a salted
+     * password with a random 4 digit number and hashes it. The username, salt
+     * and hashed password are then saved to the database.
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain desired username and
+     * password.
+     * @param responseObserver the call's stream observer.
      */
     @Override
     public void createAccount(LoginRequest request, StreamObserver<ServerResponse> responseObserver) {
         String username = request.getUsername();
         String password = request.getPassword();
 
-        Random random = new Random();
-        int salt = random.nextInt(10000);
-        String saltedpass = password + String.valueOf(salt);
-        String hashedpass = DigestUtils.sha256Hex(saltedpass);
-
         ServerResponse.Builder response = ServerResponse.newBuilder();
         MySqlConnection database = new MySqlConnection();
         try {
             if (database.getUserId(username) == 0) {
+
+                Random random = new Random();
+                int salt = random.nextInt(10000);
+                String saltedpass = password + String.valueOf(salt);
+                String hashedpass = DigestUtils.sha256Hex(saltedpass);
+
                 database.addNewUser(username, hashedpass, salt);
                 response.setToken("Account created!");
                 response.setResponseCode(1);

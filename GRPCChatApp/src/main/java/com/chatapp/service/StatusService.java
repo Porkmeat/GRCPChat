@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.chatapp.service;
 
 import com.chatapp.common.GetRequest;
@@ -18,25 +14,33 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * gRPC service for handling online/offline status updates.
  *
- * @author Mariano
+ * @author Mariano Cuneo
  */
 public class StatusService extends StatusServiceGrpc.StatusServiceImplBase {
 
     private final ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers;
 
     /**
+     * Class Constructor.
      *
-     * @param statusObservers
+     * @param statusObservers contains all currently active
+     * <code>StatusService</code> streams.
      */
     public StatusService(ConcurrentHashMap<Integer, StreamObserver<StatusUpdate>> statusObservers) {
         this.statusObservers = statusObservers;
     }
 
     /**
+     * RPC method to request a long-lived stream to be started. This method
+     * starts a long-lived stream and adds it to <code>statusObservers</code>
+     * for later access. It also notifes other users of the online status
+     * update.
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a valid JWToken.
+     * @param responseObserver the call's stream observer for the long-lived
+     * stream.
      */
     @Override
     public void receiveStatus(GetRequest request, StreamObserver<StatusUpdate> responseObserver) {

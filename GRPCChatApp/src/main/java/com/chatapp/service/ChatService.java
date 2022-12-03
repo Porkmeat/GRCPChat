@@ -19,35 +19,40 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * gRPC service for handling users' chat messages.
  *
- * @author maria
+ * @author Mariano Cuneo
  */
 public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
 
     private final ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers;
 
     /**
+     * Class constructor.
      *
-     * @param messageObservers
+     * @param messageObservers contains all currently active
+     * <code>ChatService</code> streams.
      */
     public ChatService(ConcurrentHashMap<Integer, StreamObserver<ChatMessage>> messageObservers) {
         this.messageObservers = messageObservers;
     }
 
     /**
+     * RPC method to request all messages between two users.
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a valid JWToken and
+     * the other user's user ID.
+     * @param responseObserver the call's stream observer.
      */
     @Override
     public void getMessages(GetChatRequest request, StreamObserver<MessageList> responseObserver) {
         JWToken token = new JWToken(request.getToken());
         MessageList.Builder response = MessageList.newBuilder();
-        
+
         if (token.isValid()) {
             int userId = token.getUserId();
             int friendId = request.getFriend().getUserId();
-            
+
             response.setFriendId(friendId);
 
             ChatMessage.Builder chatMessage = ChatMessage.newBuilder();
@@ -76,9 +81,13 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
     }
 
     /**
+     * RPC method to request a message to be sent. This method immediately sends
+     * the message to the reciever (if they're online), and it also saves the
+     * message to the database.
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a valid JWToken and
+     * the reciever's ID.
+     * @param responseObserver the call's stream observer.
      */
     @Override
     public void sendMessage(SendMessageRequest request, StreamObserver<ServiceResponse> responseObserver) {
@@ -113,9 +122,12 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
     }
 
     /**
+     * RPC method to request a long-lived stream to be started. This method
+     * starts a long-lived stream and adds it to <code>messageObservers</code>
+     * for later access.
      *
-     * @param request
-     * @param responseObserver
+     * @param request client request message. Must contain a valid JWToken.
+     * @param responseObserver the call's stream observer for the long-lived stream.
      */
     @Override
     public void receiveMessage(GetRequest request, StreamObserver<ChatMessage> responseObserver) {
@@ -127,16 +139,16 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
             messageObservers.put(userId, responseObserver);
         }
     }
-    
-    private void sendMessageIfOnline (int userId, int friendId, String message) {
+
+    private void sendMessageIfOnline(int userId, int friendId, String message) {
         if (messageObservers.containsKey(friendId)) {
 
-                ChatMessage.Builder chatMessage = ChatMessage.newBuilder();
-                chatMessage.setSenderId(userId)
-                        .setMessage(message)
-                        .setTimestamp(Instant.now().toString())
-                        .setSeen(false);
-                messageObservers.get(friendId).onNext(chatMessage.build());
-            }
+            ChatMessage.Builder chatMessage = ChatMessage.newBuilder();
+            chatMessage.setSenderId(userId)
+                    .setMessage(message)
+                    .setTimestamp(Instant.now().toString())
+                    .setSeen(false);
+            messageObservers.get(friendId).onNext(chatMessage.build());
+        }
     }
 }
