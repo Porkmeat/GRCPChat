@@ -74,8 +74,10 @@ public class ChatListCell extends ListCell<Chat> {
                 bubble = controller.getChatBubble();
             } else {
                 if (item.isFile()) { //  <-- code for handling files.
-                    String[] fileInfo = item.getMessage().split(" ");
-                    String[] fileName = fileInfo[0].split("\\.");
+                    int i = item.getMessage().lastIndexOf(" ");
+                    String[] fileInfo = {item.getMessage().substring(0, i), item.getMessage().substring(i+1)};
+                    int extensionIndex = fileInfo[0].lastIndexOf(".");
+                    String[] fileName = {fileInfo[0].substring(0, extensionIndex), fileInfo[0].substring(extensionIndex+1)};
                     controller.setMessageText("Download: " + fileInfo[0] + " - " + fileInfo[1] + " MB");
                     content.setOnMouseClicked(e -> {
                         item.setIsFile(false);

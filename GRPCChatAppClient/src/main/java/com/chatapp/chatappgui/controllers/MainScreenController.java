@@ -288,7 +288,7 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
         chat.setMessage("Downloading " + fileName + "." + fileType + "...");
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialFileName(fileName);
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(".jpg", "*." + fileType));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(fileType, "*." + fileType));
         File file = fileChooser.showSaveDialog(mainuserimg.getScene().getWindow());
         if (file != null) {
             new Thread(() -> {
