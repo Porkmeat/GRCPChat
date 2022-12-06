@@ -161,7 +161,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
                     fileLocation = Paths.get(SERVER_BASE_PATH.toString(), "/profilepictures/",
                             token.getUsername() + "." + request.getMetadata().getFileType());
                 } else {
-                    long chatUUID = MySqlConnection.generateChatUuid(token.getUserId(), request.getMetadata().getFriend().getUserId());
+                    long chatUUID = MySqlConnection.generateChatId(token.getUserId(), request.getMetadata().getFriend().getUserId());
                     fileLocation = Paths.get(SERVER_BASE_PATH.toString(), "/chatfiles/" + chatUUID,
                             request.getMetadata().getFileName() + "." + request.getMetadata().getFileType());
                 }
@@ -190,7 +190,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
         if (request.getMetadata().getIsProfilePic()) {
             saveLocation = Paths.get(SERVER_BASE_PATH.toString(), "/profilepictures");
         } else {
-            long chatUUID = MySqlConnection.generateChatUuid(token.getUserId(), request.getMetadata().getFriend().getUserId());
+            long chatUUID = MySqlConnection.generateChatId(token.getUserId(), request.getMetadata().getFriend().getUserId());
             saveLocation = Paths.get(SERVER_BASE_PATH.toString(), "/chatfiles/" + chatUUID);
             // create new dir in chatfiles with chatuid
             Files.createDirectories(saveLocation);

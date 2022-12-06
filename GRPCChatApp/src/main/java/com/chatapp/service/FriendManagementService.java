@@ -126,7 +126,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
             MySqlConnection database = new MySqlConnection();
 
             try {
-                ArrayList<FriendData> friends = database.fetchFriends(userId);
+                ArrayList<FriendData> friends = database.fetchFriendsAndRequests(userId);
                 for (FriendData result : friends) {
                     if (userObservers.containsKey(userId)) {
                         userObservers.get(userId).onNext(generateUserFriend(result));

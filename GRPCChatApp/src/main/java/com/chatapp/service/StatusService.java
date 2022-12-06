@@ -55,7 +55,7 @@ public class StatusService extends StatusServiceGrpc.StatusServiceImplBase {
                     .setUser(User.newBuilder().setUsername(username).setUserId(userId))
                     .setStatus(StatusUpdate.Status.ONLINE).build();
             try {
-                ArrayList<Integer> friendList = database.getFriendList(userId);
+                ArrayList<Integer> friendList = database.getFriendsIDs(userId);
                 for (int friend : friendList) {
                     if (statusObservers.containsKey(friend)) {
                         statusObservers.get(friend).onNext(statusUpdate);
