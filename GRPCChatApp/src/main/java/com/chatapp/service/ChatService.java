@@ -106,15 +106,15 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
             try {
                 database.saveMsg(userId, friendId, message);
 
-                response.setResponse("Message sent");
+                response.setResponse("SUCCESS");
                 response.setResponseCode(1);
             } catch (SQLException ex) {
                 Logger.getLogger(ChatService.class.getName()).log(Level.SEVERE, null, ex);
-                response.setResponse("Internal error");
+                response.setResponse("INTERNAL_ERROR");
                 response.setResponseCode(0);
             }
         } else {
-            response.setResponse("Verification failed");
+            response.setResponse("INVALID_CREDENTIALS");
             response.setResponseCode(0);
         }
         responseObserver.onNext(response.build());
@@ -135,7 +135,6 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
         JWToken token = new JWToken(request.getToken());
         if (token.isValid()) {
             int userId = token.getUserId();
-            System.out.println("added chat key " + userId);
             messageObservers.put(userId, responseObserver);
         }
     }

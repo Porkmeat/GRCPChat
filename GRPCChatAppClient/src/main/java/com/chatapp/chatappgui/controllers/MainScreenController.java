@@ -44,6 +44,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -92,6 +93,10 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
     private JFXSpinner profilePicSpinner;
     @FXML
     private Label profilePicLabel;
+    @FXML
+    private Text addContactError;
+    @FXML
+    private Label infoLabel;
 
     /**
      * Sets up the controller with all necessary user data needed for the UI

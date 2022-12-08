@@ -92,17 +92,17 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                         database.blockRequest(userId, requesterId);
                 }
 
-                response.setResponse("Request " + answer.getValueDescriptor().getName());
+                response.setResponse("SUCCESS");
                 response.setResponseCode(1);
 
             } catch (SQLException ex) {
 
                 Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
-                response.setResponse("Internal error");
+                response.setResponse("INTERNAL_ERROR");
                 response.setResponseCode(0);
             }
         } else {
-            response.setResponse("Verification failed");
+            response.setResponse("INVALID_CREDENTIALS");
             response.setResponseCode(0);
         }
 
@@ -132,13 +132,13 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                         userObservers.get(userId).onNext(generateUserFriend(result));
                     }
                 }
-                response.setResponse("Friends and requests fetched").setResponseCode(1);
+                response.setResponse("SUCCESS").setResponseCode(1);
             } catch (SQLException ex) {
                 Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
-                response.setResponse("Internal error").setResponseCode(0);
+                response.setResponse("INTERNAL_ERROR").setResponseCode(0);
             }
         } else {
-            response.setResponse("Verification failed").setResponseCode(0);
+            response.setResponse("INVALID_CREDENTIALS").setResponseCode(0);
         }
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
@@ -158,7 +158,6 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
         JWToken token = new JWToken(request.getToken());
         if (token.isValid()) {
             int userId = token.getUserId();
-            System.out.println("added friend key " + userId);
             userObservers.put(userId, responseObserver);
         }
     }
@@ -192,24 +191,23 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                         user.setUser(User.newBuilder().setUsername(username).setUserId(userId))
                                 .setType(UserFriend.Type.REQUEST);
                         userObservers.get(friendId).onNext(user.build());
-                        System.out.println("online user notified");
                     }
 
-                    response.setResponse("Request sent to " + friendName);
+                    response.setResponse("SUCCESS");
                     response.setResponseCode(1);
                 } else {
-                    response.setResponse("User " + friendName + " doesn't exist");
+                    response.setResponse("INVALID_ARGUMENTS");
                     response.setResponseCode(0);
 
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(FriendManagementService.class
                         .getName()).log(Level.SEVERE, null, ex);
-                response.setResponse("Internal error");
+                response.setResponse("INTERNAL_ERROR");
                 response.setResponseCode(0);
             }
         } else {
-            response.setResponse("Verification failed");
+            response.setResponse("INVALID_CREDENTIALS");
             response.setResponseCode(0);
         }
         responseObserver.onNext(response.build());

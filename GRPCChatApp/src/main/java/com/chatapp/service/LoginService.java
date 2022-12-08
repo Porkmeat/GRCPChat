@@ -90,16 +90,16 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
                         statusObservers.get(friend).onNext(statusUpdate);
                     }
                 }
-                response.setToken("Successfully logged out");
+                response.setToken("SUCCESS");
                 response.setResponseCode(1);
             } catch (SQLException ex) {
                 Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
-                response.setToken("Internal error");
+                response.setToken("INTERNAL_ERROR");
                 response.setResponseCode(0);
             }
 
         } else {
-            response.setToken("Verification failed");
+            response.setToken("INVALID_CREDENTIALS");
             response.setResponseCode(0);
         }
         responseObserver.onNext(response.build());
@@ -128,7 +128,7 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
                 JWToken token = new JWToken(username, userId);
                 response.setToken(token.toString()).setResponseCode(1);
             } else {
-                response.setToken("Connection Failed!").setResponseCode(0);
+                response.setToken("INVALID_CREDENTIALS").setResponseCode(0);
             }
 
         } catch (SQLException ex) {
@@ -164,15 +164,15 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
                 String hashedpass = DigestUtils.sha256Hex(saltedpass);
 
                 database.addNewUser(username, hashedpass, salt);
-                response.setToken("Account created!");
+                response.setToken("SUCCESS");
                 response.setResponseCode(1);
             } else {
-                response.setToken("Username not available!");
+                response.setToken("INVALID_ARGUMENTS");
                 response.setResponseCode(0);
             }
         } catch (SQLException ex) {
             Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
-            response.setToken("Internal error");
+            response.setToken("INTERNAL_ERROR");
             response.setResponseCode(0);
         }
 

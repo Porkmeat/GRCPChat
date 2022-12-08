@@ -178,7 +178,6 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
                 responseObserver.onCompleted();
             } catch (IOException ex) {
                 responseObserver.onCompleted();
-                System.out.println("File not found.");
             }
         }
     }
