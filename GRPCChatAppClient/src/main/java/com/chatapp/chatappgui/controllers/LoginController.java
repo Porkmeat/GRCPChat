@@ -13,6 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
@@ -53,13 +54,21 @@ public class LoginController {
     private JFXSpinner loadingSpinner;
 
     @FXML
+    private Text loginErrorText;
+
+    @FXML
+    private Text createAccountErrorText;
+
+    @FXML
     private void login() {
 
+        loginErrorText.setText("");
         loginPane.setDisable(true);
         loadingSpinner.setVisible(true);
         new Thread(() -> {
 
-            if (client.login(usernameField.getText(), passwordField.getText())) {
+            String response = client.login(usernameField.getText(), passwordField.getText());
+            if (response.equalsIgnoreCase("SUCCESS")) {
                 System.out.println("Connection successful!");
                 Platform.runLater(() -> {
                     try {
@@ -68,9 +77,17 @@ public class LoginController {
                         Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 });
+            } else if (response.equalsIgnoreCase("INVALID_CREDENTIALS")) {
+                System.out.println("Connection failed!");
+                Platform.runLater(() -> {
+                    loginErrorText.setText("Incorrect username or password!");
+                    loadingSpinner.setVisible(false);
+                    loginPane.setDisable(false);
+                });
             } else {
                 System.out.println("Connection failed!");
                 Platform.runLater(() -> {
+                    loginErrorText.setText("Connection error!");
                     loadingSpinner.setVisible(false);
                     loginPane.setDisable(false);
                 });
@@ -81,29 +98,44 @@ public class LoginController {
     @FXML
     private void createUser() {
 
+        createAccountErrorText.setText("");
         createAccountPane.setDisable(true);
         loadingSpinner.setVisible(true);
         new Thread(() -> {
 
             String user = newUsernameField.getText();
             String pass = newUserPasswordField.getText();
+
             if (user.equals(newUserPasswordConfirmField.getText())) {
-                if (client.createUser(user, pass)) {
+                String response = client.createUser(user, pass);
+                if (response.equalsIgnoreCase("SUCCESS")) {
                     System.out.println("Account created!");
-                    usernameField.setText(user);
-                    passwordField.setText(pass);
                     Platform.runLater(() -> {
+                        usernameField.setText(user);
+                        passwordField.setText(pass);
                         login();
                     });
-                } else {
+                } else if (response.equalsIgnoreCase("INVALID_ARGUMENTS")) {
                     System.out.println("Failed!");
                     Platform.runLater(() -> {
-
+                        createAccountErrorText.setText("Username already taken.");
                         loadingSpinner.setVisible(false);
                         createAccountPane.setDisable(false);
                     });
 
+                } else {
+                    Platform.runLater(() -> {
+                        createAccountErrorText.setText("Connection error.");
+                        loadingSpinner.setVisible(false);
+                        createAccountPane.setDisable(false);
+                    });
                 }
+            } else {
+                Platform.runLater(() -> {
+                    createAccountErrorText.setText("Passwords don't match!");
+                    loadingSpinner.setVisible(false);
+                    createAccountPane.setDisable(false);
+                });
             }
         }).start();
     }

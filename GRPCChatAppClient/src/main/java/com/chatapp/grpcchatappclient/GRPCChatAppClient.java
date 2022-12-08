@@ -115,19 +115,18 @@ public class GRPCChatAppClient {
     }
 
     /**
-     * Attempts to log in to the server. This method sends the username and
-     * password provided by the user and sends it to the server to be verified.
-     * If the information is correct, the server returns a <code>JWToken</code>
+     * Attempts to log in to the server.This method sends the username and
+ password provided by the user and sends it to the server to be verified. If the information is correct, the server returns a <code>JWToken</code>
      * to be used in all subsequent calls and the client sets up all necessary
      * gRCP stubs and returns true. If the login information is wrong the method
      * simply returns false and no stubs are created.
      *
      * @param username username to be sent to server.
      * @param password password to be sent to server.
-     * @return          <code>true</code> if server response is successful, otherwise
-     * <code>false</code>.
+     * @return server's request response.
+     * 
      */
-    public boolean login(String username, String password) {
+    public String login(String username, String password) {
 
         LoginRequest request = LoginRequest.newBuilder().setUsername(username).setPassword(password).build();
 
@@ -141,13 +140,13 @@ public class GRPCChatAppClient {
                 fileStub = FileServiceGrpc.newStub(channel);
                 fileBlockingStub = FileServiceGrpc.newBlockingStub(channel);
 
-                return true;
+                return "SUCCESS";
             } else {
-                return false;
+                return response.getToken();
             }
         } catch (StatusRuntimeException e) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-            return false;
+            return "SERVER_ERROR";
         }
 
     }
@@ -177,18 +176,17 @@ public class GRPCChatAppClient {
      *
      * @param username new account's desired username.
      * @param password new account's desired password.
-     * @return          <code>true</code> if new account was created successfully,
-     * otherwise <code>false</code>.
+     * @return server's request response.
      */
-    public boolean createUser(String username, String password) {
+    public String createUser(String username, String password) {
 
         LoginRequest request = LoginRequest.newBuilder().setUsername(username).setPassword(password).build();
         try {
             ServerResponse response = loginBlockingStub.createAccount(request);
-            return response.getResponseCode() == 1;
+            return response.getToken();
         } catch (StatusRuntimeException e) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-            return false;
+            return "SERVER_ERROR";
         }
     }
 

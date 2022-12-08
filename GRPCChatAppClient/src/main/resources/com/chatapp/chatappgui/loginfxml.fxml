@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
 <StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200.0" minWidth="300.0" prefHeight="608.0" prefWidth="860.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chatapp.chatappgui.controllers.LoginController">
    <children>
@@ -18,11 +19,12 @@
               <URL value="@fxml.css" />
           </stylesheets>
          <children>
-            <FlowPane alignment="CENTER" columnHalignment="CENTER" hgap="10.0" orientation="VERTICAL" prefHeight="400.0" prefWidth="600.0" vgap="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <FlowPane alignment="CENTER" columnHalignment="CENTER" hgap="10.0" orientation="VERTICAL" prefHeight="400.0" prefWidth="600.0" vgap="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
                <children>
                   <TextField id="username" fx:id="usernameField" prefHeight="25.0" prefWidth="149.0" promptText="Username" />
                   <PasswordField fx:id="passwordField" promptText="Password" />
                   <JFXButton fx:id="loginButton" onAction="#login" prefHeight="25.0" prefWidth="85.0" text="Login" />
+                  <Text fx:id="loginErrorText" fill="#e80c0c" strokeType="OUTSIDE" strokeWidth="0.0" />
                </children>
                <opaqueInsets>
                   <Insets />
@@ -33,12 +35,13 @@
       </AnchorPane>
       <AnchorPane fx:id="createAccountPane" disable="true" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: gray;" visible="false">
          <children>
-            <FlowPane alignment="CENTER" columnHalignment="CENTER" hgap="10.0" orientation="VERTICAL" prefHeight="400.0" prefWidth="600.0" vgap="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <FlowPane alignment="CENTER" columnHalignment="CENTER" hgap="10.0" orientation="VERTICAL" prefHeight="400.0" prefWidth="600.0" vgap="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0">
                <children>
                   <TextField id="username" fx:id="newUsernameField" prefHeight="25.0" prefWidth="149.0" promptText="Username" />
                   <PasswordField fx:id="newUserPasswordField" promptText="Password" />
                   <PasswordField fx:id="newUserPasswordConfirmField" promptText="Repeat Password" />
                   <JFXButton onAction="#createUser" text="Create Account" textFill="WHITE" />
+                  <Text fx:id="createAccountErrorText" fill="#ea0d0d" strokeType="OUTSIDE" strokeWidth="0.0" />
                </children>
             </FlowPane>
             <JFXButton buttonType="RAISED" graphicTextGap="2.0" onAction="#closeCreateAccontPane" text="&lt;" textFill="WHITE" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">

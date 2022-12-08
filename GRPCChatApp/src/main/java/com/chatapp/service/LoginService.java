@@ -122,17 +122,18 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
 
         ServerResponse.Builder response = ServerResponse.newBuilder();
         MySqlConnection database = new MySqlConnection();
+        
         try {
-            if (database.checkPassword(username, password)) {
-                int userId = database.getUserId(username);
+            int userId = database.getUserId(username);
+            if (userId != 0 && database.checkPassword(userId, password)) {
                 JWToken token = new JWToken(username, userId);
                 response.setToken(token.toString()).setResponseCode(1);
             } else {
                 response.setToken("INVALID_CREDENTIALS").setResponseCode(0);
             }
-
         } catch (SQLException ex) {
             Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
+            response.setToken("INTERNAL_ERROR");
         }
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();

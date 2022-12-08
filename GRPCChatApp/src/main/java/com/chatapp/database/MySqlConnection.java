@@ -138,21 +138,21 @@ public class MySqlConnection {
      * salt from the database and uses it to generate a hash that's then checked
      * against the hash stored in the database.
      *
-     * @param username username to be verified.
+     * @param userId id of user attempting to log in.
      * @param password password to be verified.
      * @return <code>true</code> if hashed passwords patch, else
      * <code>false</code>
      * @throws SQLException if connection with the database fails.
      */
-    public boolean checkPassword(String username, String password) throws SQLException {
+    public boolean checkPassword(int userId, String password) throws SQLException {
         try {
             connect();
-            int salt = getSalt(username);
+            int salt = getSalt(userId);
             String saltedpass = password + String.valueOf(salt);
             String hashedpass = DigestUtils.sha256Hex(saltedpass);
             preparedStatement = connect
-                    .prepareStatement("SELECT encoded_password AS savedPassword FROM user WHERE username = ?;");
-            preparedStatement.setString(1, username);
+                    .prepareStatement("SELECT encoded_password AS savedPassword FROM user WHERE id = ?;");
+            preparedStatement.setInt(1, userId);
 
             resultSet = preparedStatement.executeQuery();
 
@@ -168,11 +168,11 @@ public class MySqlConnection {
         }
     }
 
-    private int getSalt(String username) throws SQLException {
+    private int getSalt(int userId) throws SQLException {
         try {
             preparedStatement = connect
-                    .prepareStatement("SELECT salt FROM user WHERE username = ?;");
-            preparedStatement.setString(1, username);
+                    .prepareStatement("SELECT salt FROM user WHERE id = ?;");
+            preparedStatement.setInt(1, userId);
 
             resultSet = preparedStatement.executeQuery();
 
