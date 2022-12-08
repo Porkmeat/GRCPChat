@@ -1,10 +1,10 @@
 CREATE DATABASE  IF NOT EXISTS `chatapp_schema` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `chatapp_schema`;
--- MySQL dump 10.13  Distrib 8.0.31, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.28, for Win64 (x86_64)
 --
 -- Host: localhost    Database: chatapp_schema
 -- ------------------------------------------------------
--- Server version	8.0.31
+-- Server version	8.0.28
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -25,20 +25,26 @@ DROP TABLE IF EXISTS `chat`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `chat` (
-  `chat_id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `chat_user_sender` int unsigned NOT NULL,
+  `id` bigint unsigned NOT NULL,
+  `sender_id` int unsigned NOT NULL,
   `last_message` text,
   `last_message_time` datetime DEFAULT NULL,
   `last_message_seen` tinyint(1) DEFAULT '1',
-  `chat_uuid` bigint unsigned NOT NULL,
   `unseen_chats` int DEFAULT '0',
-  PRIMARY KEY (`chat_id`),
-  UNIQUE KEY `chat_uuid_UNIQUE` (`chat_uuid`),
-  KEY `chat_uuid_idx` (`chat_uuid`) /*!80000 INVISIBLE */,
-  KEY `chat_ibfk_1_idx` (`chat_user_sender`),
-  CONSTRAINT `chat_ibfk_1` FOREIGN KEY (`chat_user_sender`) REFERENCES `user` (`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `chat_ibfk_1_idx` (`sender_id`),
+  CONSTRAINT `chat_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `chat`
+--
+
+LOCK TABLES `chat` WRITE;
+/*!40000 ALTER TABLE `chat` DISABLE KEYS */;
+/*!40000 ALTER TABLE `chat` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `message`
@@ -48,20 +54,29 @@ DROP TABLE IF EXISTS `message`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `message` (
-  `message_id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `message_datetime` datetime NOT NULL,
-  `message_text` text NOT NULL,
-  `chat_uuid` bigint unsigned NOT NULL,
-  `message_user_id` int unsigned NOT NULL,
-  `message_seen` tinyint(1) NOT NULL DEFAULT '1',
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `creation_datetime` datetime NOT NULL,
+  `text` text NOT NULL,
+  `chat_id` bigint unsigned NOT NULL,
+  `sender_id` int unsigned NOT NULL,
+  `seen` tinyint(1) NOT NULL DEFAULT '1',
   `is_file` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`message_id`),
-  KEY `message_ibfk_1_idx` (`message_user_id`),
-  KEY `message_ibfk_3` (`chat_uuid`),
-  CONSTRAINT `message_ibfk_1` FOREIGN KEY (`message_user_id`) REFERENCES `user` (`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `message_ibfk_3` FOREIGN KEY (`chat_uuid`) REFERENCES `chat` (`chat_uuid`)
-) ENGINE=InnoDB AUTO_INCREMENT=314 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `message_ibfk_1_idx` (`sender_id`),
+  KEY `message_ibfk_2_idx` (`chat_id`),
+  CONSTRAINT `message_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `message_ibfk_2` FOREIGN KEY (`chat_id`) REFERENCES `chat` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `message`
+--
+
+LOCK TABLES `message` WRITE;
+/*!40000 ALTER TABLE `message` DISABLE KEYS */;
+/*!40000 ALTER TABLE `message` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `user`
@@ -71,14 +86,23 @@ DROP TABLE IF EXISTS `user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user` (
-  `user_id` int unsigned NOT NULL AUTO_INCREMENT,
-  `user_login` varchar(255) DEFAULT NULL,
-  `user_password` char(64) DEFAULT NULL,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) DEFAULT NULL,
+  `encoded_password` char(64) DEFAULT NULL,
   `salt` int NOT NULL,
-  PRIMARY KEY (`user_id`),
-  KEY `user_login_idx` (`user_login`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`id`),
+  KEY `username_idx` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user`
+--
+
+LOCK TABLES `user` WRITE;
+/*!40000 ALTER TABLE `user` DISABLE KEYS */;
+/*!40000 ALTER TABLE `user` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `user_contacts`
@@ -88,20 +112,28 @@ DROP TABLE IF EXISTS `user_contacts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_contacts` (
-  `contact_user_id` int unsigned NOT NULL,
-  `contact_friend_id` int unsigned NOT NULL,
-  `contact_alias` varchar(255) NOT NULL,
-  `contact_status` tinyint NOT NULL,
-  `chat_uuid` varchar(255) NOT NULL,
-  PRIMARY KEY (`contact_user_id`,`contact_friend_id`),
-  KEY `contact_chat_uuid` (`chat_uuid`),
-  KEY `user_contacts_ibfk_3_idx` (`contact_status`),
-  KEY `user_contacts_ibfk_2_idx` (`contact_friend_id`),
-  CONSTRAINT `user_contacts_ibfk_1` FOREIGN KEY (`contact_user_id`) REFERENCES `user` (`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `user_contacts_ibfk_2` FOREIGN KEY (`contact_friend_id`) REFERENCES `user` (`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `user_contacts_ibfk_3` FOREIGN KEY (`contact_status`) REFERENCES `user_status` (`status_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  `user_id` int unsigned NOT NULL,
+  `contact_id` int unsigned NOT NULL,
+  `alias` varchar(255) NOT NULL,
+  `status` tinyint NOT NULL,
+  `chat_id` bigint NOT NULL,
+  PRIMARY KEY (`user_id`,`contact_id`),
+  KEY `user_contacts_ibfk_2_idx` (`contact_id`),
+  KEY `user_contacts_ibfk_3_idx` (`status`),
+  CONSTRAINT `user_contacts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `user_contacts_ibfk_2` FOREIGN KEY (`contact_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `user_contacts_ibfk_3` FOREIGN KEY (`status`) REFERENCES `user_status` (`status_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_contacts`
+--
+
+LOCK TABLES `user_contacts` WRITE;
+/*!40000 ALTER TABLE `user_contacts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `user_contacts` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `user_status`
@@ -117,6 +149,16 @@ CREATE TABLE `user_status` (
   UNIQUE KEY `status_name_UNIQUE` (`status_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_status`
+--
+
+LOCK TABLES `user_status` WRITE;
+/*!40000 ALTER TABLE `user_status` DISABLE KEYS */;
+INSERT INTO `user_status` VALUES (3,'Accepted'),(6,'Blocked'),(5,'Deleted'),(4,'Denied'),(1,'Pending'),(2,'Requested');
+/*!40000 ALTER TABLE `user_status` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -127,4 +169,4 @@ CREATE TABLE `user_status` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-12-03 13:26:45
+-- Dump completed on 2022-12-06 22:34:55
