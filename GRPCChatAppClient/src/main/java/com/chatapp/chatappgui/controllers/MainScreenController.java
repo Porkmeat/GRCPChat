@@ -221,6 +221,10 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
             }
         }
     }
+    
+    private void displayInfoLabel() {
+        
+    }
 
     /**
      * Handles profile picture upload when user clicks on current profile

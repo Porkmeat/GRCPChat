@@ -404,6 +404,7 @@ public class GRPCChatAppClient {
      * Sends request to server to add a user as a friend.
      *
      * @param friendname username of user to be sent the friend request.
+     * 
      */
     public void addFriend(String friendname) {
 

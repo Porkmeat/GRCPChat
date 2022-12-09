@@ -22,9 +22,12 @@ public class MySqlConnection {
     private Connection connect = null;
     private PreparedStatement preparedStatement = null;
     private ResultSet resultSet = null;
-    private final String DATABASE_ADDRESS = "jdbc:mysql://localhost:3306/chatapp_schema";
+    
+    private final int DATABASE_PORT = 3306;
     private final String DATABASE_ACCOUNT_NAME = "javatest";
     private final String DATABASE_ACCOUNT_PASSWORD = "Java1test2";
+    
+    private final String DATABASE_ADDRESS = "jdbc:mysql://localhost:"+DATABASE_PORT+"/chatapp_schema";
 
     /**
      * Query the database for the user ID of for a given username.
