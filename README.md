@@ -52,7 +52,7 @@ From the `GRPCChatAppClient` directory and from a different terminal:
 
 4. Run multiplie clients to test:
 
-From the `GRPCChatAppClient`:
+From the `GRPCChatAppClient` directory:
    
    * Run the client (use a different terminal for each instance):
    
