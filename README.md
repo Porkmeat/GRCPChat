@@ -1,7 +1,7 @@
 # GRCPChat
 
 This is a schowcase project for a live and persistent messaging service including both a desktop client, the server and the database.
-Both the client and the server are coded in Java and the DBMS is MySQL.
+Both the client and the server are coded in Java and the DBMS is MySQL. All client-server interaction is carried out using the gRPC framework.
 
 ## Features
 
