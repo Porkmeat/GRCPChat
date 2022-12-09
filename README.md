@@ -5,15 +5,15 @@ Both the client and the server are coded in Java and the DBMS is MySQL.
 
 ## Features
 
-*Live Messages
-*Live user online status
-*Chat History
-*Friend Management
-   *Send Friend Requests
-   *Accept/Block/Deny Requests
-   *Persistent Friend List
-*File transfer between users
-*Profile picture upload
+* Live Messages
+* Live user online status
+* Chat History
+* Friend Management
+   * Send Friend Requests
+   * Accept/Block/Deny Requests
+   * Persistent Friend List
+* File transfer between users
+* Profile picture upload
 
 More features to be added in the future.
 
@@ -28,13 +28,13 @@ Finally, add the username, password and database port to the `MySqlConnection.ja
 
 From the `GRPCChatApp` directory:
 
-   *Compile:
+   * Compile:
    
    ```bash
    mvn clean install
    ```
    
-   *Run 
+   * Run 
    
    ```bash
    mvn exec:java
@@ -44,7 +44,7 @@ From the `GRPCChatApp` directory:
 
 From the `GRPCChatAppClient` directory and from a different terminal:
 
-   *Compile:
+   * Compile:
    
    ```bash
    mvn clean install
@@ -54,7 +54,7 @@ From the `GRPCChatAppClient` directory and from a different terminal:
 
 From the `GRPCChatAppClient`:
    
-   *Run the client (use a different terminal for each instance):
+   * Run the client (use a different terminal for each instance):
    
    ```bash
    mvn exec:java
