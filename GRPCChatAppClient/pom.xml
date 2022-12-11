@@ -163,19 +163,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.chatapp.chatappgui.Main</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-            </plugin>
-            <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.1</version>
                 <executions>
@@ -185,11 +172,15 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.chatapp.chatappgui.Main</mainClass>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer">
                                 </transformer>
-                            </transformers>
+                                
+                                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                        <mainClass>com.chatapp.chatappgui.Main</mainClass>
+                                    </transformer>
+                                </transformers>
                         </configuration>
                     </execution>
                 </executions>
