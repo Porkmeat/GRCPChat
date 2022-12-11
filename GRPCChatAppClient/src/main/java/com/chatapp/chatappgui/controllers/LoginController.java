@@ -2,7 +2,6 @@ package com.chatapp.chatappgui.controllers;
 
 import com.chatapp.chatappgui.Appgui;
 import com.chatapp.grpcchatappclient.GRPCChatAppClient;
-import com.jfoenix.controls.JFXSpinner;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,9 +50,6 @@ public class LoginController {
     private AnchorPane loginPane;
 
     @FXML
-    private JFXSpinner loadingSpinner;
-
-    @FXML
     private Text loginErrorText;
 
     @FXML
@@ -63,8 +59,8 @@ public class LoginController {
     private void login() {
 
         loginErrorText.setText("");
+        
         loginPane.setDisable(true);
-        loadingSpinner.setVisible(true);
         new Thread(() -> {
 
             String response = client.login(usernameField.getText(), passwordField.getText());
@@ -81,14 +77,14 @@ public class LoginController {
                 System.out.println("Connection failed!");
                 Platform.runLater(() -> {
                     loginErrorText.setText("Incorrect username or password!");
-                    loadingSpinner.setVisible(false);
+
                     loginPane.setDisable(false);
                 });
             } else {
                 System.out.println("Connection failed!");
                 Platform.runLater(() -> {
                     loginErrorText.setText("Connection error!");
-                    loadingSpinner.setVisible(false);
+
                     loginPane.setDisable(false);
                 });
             }
@@ -100,7 +96,7 @@ public class LoginController {
 
         createAccountErrorText.setText("");
         createAccountPane.setDisable(true);
-        loadingSpinner.setVisible(true);
+
         new Thread(() -> {
 
             String user = newUsernameField.getText();
@@ -119,21 +115,21 @@ public class LoginController {
                     System.out.println("Failed!");
                     Platform.runLater(() -> {
                         createAccountErrorText.setText("Username already taken.");
-                        loadingSpinner.setVisible(false);
+
                         createAccountPane.setDisable(false);
                     });
 
                 } else {
                     Platform.runLater(() -> {
                         createAccountErrorText.setText("Connection error.");
-                        loadingSpinner.setVisible(false);
+
                         createAccountPane.setDisable(false);
                     });
                 }
             } else {
                 Platform.runLater(() -> {
                     createAccountErrorText.setText("Passwords don't match!");
-                    loadingSpinner.setVisible(false);
+
                     createAccountPane.setDisable(false);
                 });
             }

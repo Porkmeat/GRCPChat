@@ -10,7 +10,7 @@ import com.chatapp.grpcchatappclient.GRPCChatAppClient;
 import com.chatapp.listeners.FileListener;
 import com.chatapp.listeners.MessageListener;
 import com.chatapp.listeners.StatusListener;
-import com.jfoenix.controls.JFXSpinner;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -50,7 +50,7 @@ import javafx.stage.Stage;
 
 /**
  * FXML Controller class for the main screen. UI is built with JavaFX. All
- * methods annotated with FXML reffer to UI interactions and all fields
+ * methods annotated with FXML refer to UI interactions and all fields
  * annotated with FXML are UI components.
  *
  * @author Mariano Cuneo
@@ -89,8 +89,7 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
     private TabPane mainTabPane;
     @FXML
     private ImageView mainchatimg;
-    @FXML
-    private JFXSpinner profilePicSpinner;
+
     @FXML
     private Label profilePicLabel;
     @FXML
@@ -246,7 +245,7 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
     }
 
     private void profilePicChange(File picture) {
-        profilePicSpinner.setVisible(true);
+
         profilePicLabel.setVisible(false);
         mainuserimg.setOpacity(0.5);
         new Thread(() -> {
@@ -352,7 +351,7 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
                 } else {
                     System.out.println("File upload Failed");
                 }
-                profilePicSpinner.setVisible(false);
+                
                 profilePicLabel.setVisible(true);
                 mainuserimg.setOpacity(1);
             }

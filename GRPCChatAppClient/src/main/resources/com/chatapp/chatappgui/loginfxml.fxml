@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXButton?>
-<?import com.jfoenix.controls.JFXSpinner?>
 <?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.PasswordField?>
@@ -51,6 +50,5 @@
             </JFXButton>
          </children>
       </AnchorPane>
-      <JFXSpinner fx:id="loadingSpinner" maxHeight="77.0" maxWidth="77.0" minHeight="77.0" minWidth="77.0" prefHeight="77.0" prefWidth="77.0" radius="77.0" visible="false" />
    </children>
 </StackPane>
