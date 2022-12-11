@@ -31,7 +31,7 @@ public class GetMessagesCallback implements StreamObserver<MessageList> {
     }
 
     /**
-     * Handles server response, genertes <code>Chat</code> objects and notifies
+     * Handles server response, generates <code>Chat</code> objects and notifies
      * the listeners.
      *
      * @param messageList message list returned by server.
