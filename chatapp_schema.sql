@@ -170,3 +170,11 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2022-12-06 22:34:55
+
+-- Add GRPCChatApp server's user: "localhost", when mysql-server runs on the host (not in a container).
+CREATE USER 'javatest'@'localhost' IDENTIFIED BY 'Java1test2';
+GRANT  INSERT, UPDATE, SELECT on chatapp_schema.* TO 'javatest'@'localhost' WITH GRANT OPTION;
+
+-- Add GRPCChatApp server's user: "172.17.0.1" is typically the docker host, when mysql-server runs in a container.
+CREATE USER 'javatest'@'172.17.0.1' IDENTIFIED BY 'Java1test2';
+GRANT  INSERT, UPDATE, SELECT on chatapp_schema.* TO 'javatest'@'172.17.0.1' WITH GRANT OPTION;
