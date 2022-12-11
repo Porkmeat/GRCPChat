@@ -102,7 +102,7 @@ public class LoginController {
             String user = newUsernameField.getText();
             String pass = newUserPasswordField.getText();
 
-            if (user.equals(newUserPasswordConfirmField.getText())) {
+            if (pass.equals(newUserPasswordConfirmField.getText())) {
                 String response = client.createUser(user, pass);
                 if (response.equalsIgnoreCase("SUCCESS")) {
                     System.out.println("Account created!");
