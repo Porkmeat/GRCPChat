@@ -13,7 +13,7 @@
                 <exec.vmArgs>-Dos.detected.name=windows  -Dos.detected.arch=x86_64  -Dos.detected.classifier=windows-x86_64  --module-path C:\Users\maria\OneDrive\Documentos\Java\javafx-sdk-19\lib  --add-modules javafx.controls,javafx.fxml,com.jfoenix --add-exports javafx.graphics/com.sun.javafx.scene=com.jfoenix  --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix  --add-exports javafx.controls/com.sun.javafx.scene.control=com.jfoenix  --add-exports javafx.base/com.sun.javafx.binding=com.jfoenix  --add-exports javafx.graphics/com.sun.javafx.stage=com.jfoenix  --add-exports javafx.base/com.sun.javafx.event=com.jfoenix   --add-exports javafx.graphics/com.sun.javafx.scene=com.jfoenix</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.appArgs></exec.appArgs>
-                <exec.mainClass>com.chatapp.chatappgui.Appgui</exec.mainClass>
+                <exec.mainClass>com.chatapp.chatappgui.Main</exec.mainClass>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
@@ -30,7 +30,7 @@
                 <exec.vmArgs>-Dos.detected.name=windows  -Dos.detected.arch=x86_64  -Dos.detected.classifier=windows-x86_64  --module-path C:\Users\maria\OneDrive\Documentos\Java\javafx-sdk-19\lib  --add-modules javafx.controls,javafx.fxml,com.jfoenix --add-exports javafx.graphics/com.sun.javafx.scene=com.jfoenix  --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix  --add-exports javafx.controls/com.sun.javafx.scene.control=com.jfoenix  --add-exports javafx.base/com.sun.javafx.binding=com.jfoenix  --add-exports javafx.graphics/com.sun.javafx.stage=com.jfoenix  --add-exports javafx.base/com.sun.javafx.event=com.jfoenix   --add-exports javafx.graphics/com.sun.javafx.scene=com.jfoenix -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.appArgs></exec.appArgs>
-                <exec.mainClass>com.chatapp.chatappgui.Appgui</exec.mainClass>
+                <exec.mainClass>com.chatapp.chatappgui.Main</exec.mainClass>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
             </properties>
@@ -47,7 +47,7 @@
             <properties>
                 <exec.vmArgs>-Dos.detected.name=windows  -Dos.detected.arch=x86_64  -Dos.detected.classifier=windows-x86_64  --module-path C:\Users\maria\OneDrive\Documentos\Java\javafx-sdk-19\lib  --add-modules javafx.controls,javafx.fxml,com.jfoenix --add-exports javafx.graphics/com.sun.javafx.scene=com.jfoenix  --add-exports javafx.controls/com.sun.javafx.scene.control.behavior=com.jfoenix  --add-exports javafx.controls/com.sun.javafx.scene.control=com.jfoenix  --add-exports javafx.base/com.sun.javafx.binding=com.jfoenix  --add-exports javafx.graphics/com.sun.javafx.stage=com.jfoenix  --add-exports javafx.base/com.sun.javafx.event=com.jfoenix   --add-exports javafx.graphics/com.sun.javafx.scene=com.jfoenix</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.mainClass>com.chatapp.chatappgui.Appgui</exec.mainClass>
+                <exec.mainClass>com.chatapp.chatappgui.Main</exec.mainClass>
                 <exec.executable>java</exec.executable>
                 <exec.appArgs></exec.appArgs>
             </properties>

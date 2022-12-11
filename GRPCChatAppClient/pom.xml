@@ -9,7 +9,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>18</maven.compiler.source>
         <maven.compiler.target>18</maven.compiler.target>
-        <exec.mainClass>com.chatapp.chatappgui.Appgui</exec.mainClass>
+        <exec.mainClass>com.chatapp.chatappgui.Main</exec.mainClass>
     </properties>
     <dependencies>
         <dependency>
@@ -167,7 +167,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.chatapp.chatappgui.Appgui</mainClass>
+                            <mainClass>com.chatapp.chatappgui.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
