@@ -35,7 +35,7 @@ public class StatusService extends StatusServiceGrpc.StatusServiceImplBase {
     /**
      * RPC method to request a long-lived stream to be started. This method
      * starts a long-lived stream and adds it to <code>statusObservers</code>
-     * for later access. It also notifes other users of the online status
+     * for later access. It also notifies other users of the online status
      * update.
      *
      * @param request client request message. Must contain a valid JWToken.

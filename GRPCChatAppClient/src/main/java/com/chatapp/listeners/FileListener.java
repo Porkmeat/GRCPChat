@@ -3,7 +3,7 @@ package com.chatapp.listeners;
 import com.chatapp.dataobjects.Chat;
 
 /**
- * Listener file upload attemtps status updates.
+ * Listener file upload attempts status updates.
  *
  * @author Mariano Cuneo
  */

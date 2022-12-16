@@ -17,7 +17,7 @@ import javafx.stage.Stage;
 
 /**
  * FXML Controller class for the Log in screen. UI is built with JavaFX. All
- * methods annotated with FXML reffer to UI interactions and all fields
+ * methods annotated with FXML refer to UI interactions and all fields
  * annotated with FXML are UI components.
  *
  * @author Mariano Cuneo

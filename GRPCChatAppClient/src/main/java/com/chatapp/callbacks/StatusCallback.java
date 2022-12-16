@@ -25,7 +25,7 @@ public class StatusCallback implements StreamObserver<StatusUpdate> {
     }
 
     /**
-     * Retrives online/offline status updates and notifies listeners.
+     * Retrieves online/offline status updates and notifies listeners.
      *
      * @param statusUpdate server message containing online/offline status
      * updates.

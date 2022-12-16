@@ -1,12 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package com.chatapp.chatappgui;
 
 /**
- *
- * @author Mariano
+ * A super Main class to ensure errorless execution of the JavaFx application.
+ * 
+ * @author Mariano Cuneo
  */
 public class Main {
     public static void main(String[] args) {

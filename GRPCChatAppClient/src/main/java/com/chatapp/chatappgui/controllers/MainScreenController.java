@@ -221,8 +221,23 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
         }
     }
     
-    private void displayInfoLabel() {
-        
+    private void displayInfoLabel(String infoText) {
+//        Duration cycleDuration = Duration.millis(500);
+//        Timeline timeline;
+//        if (usercardtoggle.isSelected()) {
+//            timeline = new Timeline(
+//                    new KeyFrame(cycleDuration,
+//                            new KeyValue(usercard.prefHeightProperty(), 300, Interpolator.EASE_BOTH))
+//            );
+//        } else {
+//            timeline = new Timeline(
+//                    new KeyFrame(cycleDuration,
+//                            new KeyValue(usercard.prefHeightProperty(), 60, Interpolator.EASE_BOTH))
+//            );
+//        }
+//
+//        timeline.play();
+//    }
     }
 
     /**

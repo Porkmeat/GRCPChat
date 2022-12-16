@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 /**
- * Obsever for server response in Async file upload attempts.
+ * Observer for server response in Async file upload attempts.
  *
  * @author Mariano Cuneo
  */

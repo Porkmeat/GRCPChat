@@ -94,7 +94,7 @@ public class JWToken {
     /**
      * Verifies the token signature.
      * 
-     * @return <code>true</code> if token is vaild, else <code>false</code>.
+     * @return <code>true</code> if token is valid, else <code>false</code>.
      */
     public boolean isValid() {
         String expectedSignature = hmacSha256(encodedHeader + "." + encodedPayload, secret);

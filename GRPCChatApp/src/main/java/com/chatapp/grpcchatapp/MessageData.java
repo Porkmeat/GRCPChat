@@ -19,7 +19,7 @@ public class MessageData {
      * @param message message text.
      * @param senderId message sender's user ID.
      * @param timestamp message time stamp.
-     * @param seen boolean stating if message has been seen by reciever.
+     * @param seen boolean stating if message has been seen by receiver.
      * @param isFile boolean stating if message is file information.
      */
     public MessageData(String message, int senderId, String timestamp, boolean seen, boolean isFile) {

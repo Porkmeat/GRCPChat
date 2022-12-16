@@ -54,7 +54,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
      * RPC method to request a file upload. The client must first send a
      * <code>Metadata</code> message containing a valid JWToken and all relevant
      * file data. Afterwards the client streams <code>FileChunk</code> messages
-     * containing the file's bytes. For user to user files, the reciever is
+     * containing the file's bytes. For user to user files, the receiver is
      * notified (if online) and a reference to the file is saved on the
      * database.
      *
@@ -143,7 +143,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
     }
 
     /**
-     * RPC method to request a file download. If the file exists, it is chuncked
+     * RPC method to request a file download. If the file exists, it is chunked
      * and streamed to the client.
      *
      * @param request client request message. Must contain a valid JWToken and

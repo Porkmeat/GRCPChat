@@ -63,7 +63,7 @@ import org.apache.commons.io.FilenameUtils;
 /**
  * Program's main client Class. This class handles all non-UI logic and server
  * calls. It maintains a list of listeners to be able to notify the different UI
- * controllers when necessary. The server uses a gRCP protocall for all calls.
+ * controllers when necessary. The server uses a gRCP protocol for all calls.
  *
  * @author Mariano Cuneo
  */
@@ -311,8 +311,8 @@ public class GRPCChatAppClient {
     }
 
     /**
-     * Requests a file download from the server. This method is used to retrive
-     * both profile pictures aswell as user sent files.
+     * Requests a file download from the server. This method is used to retrieve
+     * both profile pictures as well as user sent files.
      *
      * @param fileName name of the file to be downloaded.
      * @param fileType file extension of the file to be downloaded.

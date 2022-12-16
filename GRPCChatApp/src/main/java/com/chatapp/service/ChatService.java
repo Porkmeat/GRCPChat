@@ -82,11 +82,11 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
 
     /**
      * RPC method to request a message to be sent. This method immediately sends
-     * the message to the reciever (if they're online), and it also saves the
+     * the message to the receiver (if they're online), and it also saves the
      * message to the database.
      *
      * @param request client request message. Must contain a valid JWToken and
-     * the reciever's ID.
+     * the receiver's ID.
      * @param responseObserver the call's stream observer.
      */
     @Override

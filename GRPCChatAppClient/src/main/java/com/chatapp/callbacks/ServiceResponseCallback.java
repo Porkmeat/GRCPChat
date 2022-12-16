@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 public class ServiceResponseCallback implements StreamObserver<ServiceResponse> {
 
     /**
-     * Retrives and logs the result of the server call.
+     * Retrieves and logs the result of the server call.
      *
      * @param value server message containing request results information.
      */

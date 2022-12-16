@@ -35,7 +35,7 @@ public class ChatCellController {
     /**
      * Sets the background color of the <code>chatBubble</code> component.
      *
-     * @param color color to be applied. The value can be rgb, hex or the
+     * @param color color to be applied. The value can be RGB, hex or the
      * color's name.
      */
     public void setBubbleColor(String color) {
