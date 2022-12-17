@@ -18,11 +18,16 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -31,6 +36,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -47,11 +53,12 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 /**
  * FXML Controller class for the main screen. UI is built with JavaFX. All
- * methods annotated with FXML refer to UI interactions and all fields
- * annotated with FXML are UI components.
+ * methods annotated with FXML refer to UI interactions and all fields annotated
+ * with FXML are UI components.
  *
  * @author Mariano Cuneo
  */
@@ -62,6 +69,7 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
     private final HashMap<Integer, ListView> activeChats = new HashMap<>();
     private ListView<Chat> activeChat;
     private Friend requester;
+    private Timeline infoLabelTimeline;
 
     @FXML
     private Circle mainuserimg;
@@ -90,6 +98,8 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
     @FXML
     private ImageView mainchatimg;
 
+    @FXML
+    private ProgressIndicator profilePicSpinner;
     @FXML
     private Label profilePicLabel;
     @FXML
@@ -220,24 +230,23 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
             }
         }
     }
-    
+
     private void displayInfoLabel(String infoText) {
-//        Duration cycleDuration = Duration.millis(500);
-//        Timeline timeline;
-//        if (usercardtoggle.isSelected()) {
-//            timeline = new Timeline(
-//                    new KeyFrame(cycleDuration,
-//                            new KeyValue(usercard.prefHeightProperty(), 300, Interpolator.EASE_BOTH))
-//            );
-//        } else {
-//            timeline = new Timeline(
-//                    new KeyFrame(cycleDuration,
-//                            new KeyValue(usercard.prefHeightProperty(), 60, Interpolator.EASE_BOTH))
-//            );
-//        }
-//
-//        timeline.play();
-//    }
+        if (infoLabelTimeline != null) {
+            infoLabelTimeline.stop();
+        }
+
+        infoLabelTimeline = new Timeline();
+        infoLabel.setText(infoText);
+        infoLabelTimeline.getKeyFrames().addAll(
+                new KeyFrame(Duration.ZERO, new KeyValue(infoLabel.opacityProperty(), 0)),
+                new KeyFrame(Duration.millis(500), new KeyValue(infoLabel.opacityProperty(), 1)),
+                new KeyFrame(Duration.millis(2000), new KeyValue(infoLabel.opacityProperty(), 1)),
+                new KeyFrame(Duration.millis(2500), new KeyValue(infoLabel.opacityProperty(), 0))
+        );
+
+        infoLabelTimeline.setCycleCount(1);
+        infoLabelTimeline.play();
     }
 
     /**
@@ -260,7 +269,7 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
     }
 
     private void profilePicChange(File picture) {
-
+        profilePicSpinner.setVisible(true);
         profilePicLabel.setVisible(false);
         mainuserimg.setOpacity(0.5);
         new Thread(() -> {
@@ -308,18 +317,26 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
      */
     public void downloadFile(String fileName, String fileType, Chat chat) {
         String fileData = chat.getMessage();
-        chat.setMessage("Downloading " + fileName + "." + fileType + "...");
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialFileName(fileName);
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(fileType, "*." + fileType));
         File file = fileChooser.showSaveDialog(mainuserimg.getScene().getWindow());
         if (file != null) {
+            chat.setMessage("Downloading " + fileName + "." + fileType + "...");
+            displayInfoLabel("Downloading " + file.getName() + "...");
             new Thread(() -> {
                 String downloadDir = client.fetchFile(fileName, fileType, file.getParent(), false, userlist.getSelectionModel().getSelectedItem().getUserId());
                 if (!downloadDir.isEmpty()) {
                     chat.setMessage(fileName + "." + fileType + " finished downloading.");
+                    Platform.runLater(() -> {
+                        displayInfoLabel(file.getName() + " finished downloading.");
+                    });
+
                 } else {
                     chat.setMessage(fileName + "." + fileType + " - Download failed");
+                    Platform.runLater(() -> {
+                        displayInfoLabel(file.getName() + " - Download failed");
+                    });
                 }
             }).start();
         } else {
@@ -330,6 +347,7 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
 
     private void sendFile(File file, Friend reciever) {
         String message = "Sending File: " + file.getName() + "...";
+        displayInfoLabel(message );
         LocalDateTime now = LocalDateTime.now();
         Chat newMessage = new Chat(message, now);
         activeChat.getItems().add(newMessage);
@@ -340,6 +358,7 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
             } catch (IOException ex) {
                 Platform.runLater(() -> {
                     String failMessage = file.getName() + " upload failed.";
+                    displayInfoLabel(failMessage);
                     newMessage.setMessage(failMessage);
                     reciever.setLastMsg(failMessage);
                 });
@@ -356,17 +375,20 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
                 if (success) {
                     String successMessage = fileName + " sent.";
                     chat.setMessage(successMessage);
+                    displayInfoLabel(successMessage);
                 } else {
                     String failMessage = fileName + " upload failed.";
                     chat.setMessage(failMessage);
+                    displayInfoLabel(failMessage);
                 }
             } else {
                 if (success) {
                     setProfilePicture(new Image(fileName));
                 } else {
+                    displayInfoLabel("Profile picture upload failed.");
                     System.out.println("File upload Failed");
                 }
-                
+                profilePicSpinner.setVisible(false);
                 profilePicLabel.setVisible(true);
                 mainuserimg.setOpacity(1);
             }
@@ -534,6 +556,8 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
         });
     }
 
+    
+    // Extra logic needed to correcty disply a picture within a circle in the UI.
     private void setProfilePicture(Image image) {
 
         double radius = mainuserimg.getRadius();
@@ -561,6 +585,8 @@ public class MainScreenController implements StatusListener, MessageListener, Fr
 
     }
 
+    // Handler is used to remove the standar enter key (new line) behaviour from
+    // the new chat text input and make it trigger a send command instead.
     private class EnterKeyHandler implements EventHandler<KeyEvent> {
 
         private KeyEvent keypress;

@@ -2,6 +2,7 @@ package com.chatapp.chatappgui.controllers;
 
 import com.chatapp.chatappgui.Appgui;
 import com.chatapp.grpcchatappclient.GRPCChatAppClient;
+import com.jfoenix.controls.JFXButton;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
@@ -17,8 +19,8 @@ import javafx.stage.Stage;
 
 /**
  * FXML Controller class for the Log in screen. UI is built with JavaFX. All
- * methods annotated with FXML refer to UI interactions and all fields
- * annotated with FXML are UI components.
+ * methods annotated with FXML refer to UI interactions and all fields annotated
+ * with FXML are UI components.
  *
  * @author Mariano Cuneo
  */
@@ -50,94 +52,113 @@ public class LoginController {
     private AnchorPane loginPane;
 
     @FXML
+    private ProgressIndicator loadingSpinner;
+
+    @FXML
     private Text loginErrorText;
 
     @FXML
     private Text createAccountErrorText;
 
     @FXML
+    private JFXButton createAccountButton;
+
+    @FXML
+    private JFXButton loginButton;
+
+    @FXML
     private void login() {
 
-        loginErrorText.setText("");
-        
-        loginPane.setDisable(true);
-        new Thread(() -> {
+        if (!usernameField.getText().isBlank() && !passwordField.getText().isBlank()) {
+            loginErrorText.setText("");
 
-            String response = client.login(usernameField.getText(), passwordField.getText());
-            if (response.equalsIgnoreCase("SUCCESS")) {
-                System.out.println("Connection successful!");
-                Platform.runLater(() -> {
-                    try {
-                        switchToMainScene();
-                    } catch (IOException ex) {
-                        Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                });
-            } else if (response.equalsIgnoreCase("INVALID_CREDENTIALS")) {
-                System.out.println("Connection failed!");
-                Platform.runLater(() -> {
-                    loginErrorText.setText("Incorrect username or password!");
+            loginPane.setDisable(true);
+            loadingSpinner.setVisible(true);
+            new Thread(() -> {
 
-                    loginPane.setDisable(false);
-                });
-            } else {
-                System.out.println("Connection failed!");
-                Platform.runLater(() -> {
-                    loginErrorText.setText("Connection error!");
-
-                    loginPane.setDisable(false);
-                });
-            }
-        }).start();
+                String response = client.login(usernameField.getText(), passwordField.getText());
+                if (response.equalsIgnoreCase("SUCCESS")) {
+                    System.out.println("Connection successful!");
+                    Platform.runLater(() -> {
+                        try {
+                            switchToMainScene();
+                        } catch (IOException ex) {
+                            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    });
+                } else if (response.equalsIgnoreCase("INVALID_CREDENTIALS")) {
+                    System.out.println("Connection failed!");
+                    Platform.runLater(() -> {
+                        loginErrorText.setText("Incorrect username or password!");
+                        loadingSpinner.setVisible(false);
+                        loginPane.setDisable(false);
+                    });
+                } else {
+                    System.out.println("Connection failed!");
+                    Platform.runLater(() -> {
+                        loginErrorText.setText("Connection error!");
+                        loadingSpinner.setVisible(false);
+                        loginPane.setDisable(false);
+                    });
+                }
+            }).start();
+        }
     }
 
     @FXML
     private void createUser() {
 
-        createAccountErrorText.setText("");
-        createAccountPane.setDisable(true);
+        if (!newUsernameField.getText().isBlank()
+                && !newUserPasswordField.getText().isBlank()
+                && !newUserPasswordConfirmField.getText().isBlank()) {
 
-        new Thread(() -> {
+            createAccountErrorText.setText("");
+            createAccountPane.setDisable(true);
+            loadingSpinner.setVisible(true);
+            new Thread(() -> {
 
-            String user = newUsernameField.getText();
-            String pass = newUserPasswordField.getText();
+                String user = newUsernameField.getText();
+                String pass = newUserPasswordField.getText();
 
-            if (pass.equals(newUserPasswordConfirmField.getText())) {
-                String response = client.createUser(user, pass);
-                if (response.equalsIgnoreCase("SUCCESS")) {
-                    System.out.println("Account created!");
-                    Platform.runLater(() -> {
-                        usernameField.setText(user);
-                        passwordField.setText(pass);
-                        login();
-                    });
-                } else if (response.equalsIgnoreCase("INVALID_ARGUMENTS")) {
-                    System.out.println("Failed!");
-                    Platform.runLater(() -> {
-                        createAccountErrorText.setText("Username already taken.");
+                if (pass.equals(newUserPasswordConfirmField.getText())) {
+                    String response = client.createUser(user, pass);
+                    if (response.equalsIgnoreCase("SUCCESS")) {
+                        System.out.println("Account created!");
+                        Platform.runLater(() -> {
+                            usernameField.setText(user);
+                            passwordField.setText(pass);
+                            login();
+                        });
+                    } else if (response.equalsIgnoreCase("INVALID_ARGUMENTS")) {
+                        System.out.println("Failed!");
+                        Platform.runLater(() -> {
+                            createAccountErrorText.setText("Username already taken.");
+                            loadingSpinner.setVisible(false);
+                            createAccountPane.setDisable(false);
+                        });
 
-                        createAccountPane.setDisable(false);
-                    });
-
+                    } else {
+                        Platform.runLater(() -> {
+                            createAccountErrorText.setText("Connection error.");
+                            loadingSpinner.setVisible(false);
+                            createAccountPane.setDisable(false);
+                        });
+                    }
                 } else {
                     Platform.runLater(() -> {
-                        createAccountErrorText.setText("Connection error.");
-
+                        createAccountErrorText.setText("Passwords don't match!");
+                        loadingSpinner.setVisible(false);
                         createAccountPane.setDisable(false);
                     });
                 }
-            } else {
-                Platform.runLater(() -> {
-                    createAccountErrorText.setText("Passwords don't match!");
-
-                    createAccountPane.setDisable(false);
-                });
-            }
-        }).start();
+            }).start();
+        }
     }
 
     @FXML
     private void closeCreateAccontPane() {
+        loginButton.setDefaultButton(true);
+        createAccountButton.setDefaultButton(false);
         createAccountPane.setVisible(false);
         createAccountPane.setDisable(true);
         loginPane.setDisable(false);
@@ -145,6 +166,8 @@ public class LoginController {
 
     @FXML
     private void openCreateAccontPane() {
+        loginButton.setDefaultButton(false);
+        createAccountButton.setDefaultButton(true);
         createAccountPane.setVisible(true);
         createAccountPane.setDisable(false);
         loginPane.setDisable(true);

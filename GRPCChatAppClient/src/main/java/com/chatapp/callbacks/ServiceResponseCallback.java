@@ -1,5 +1,6 @@
 package com.chatapp.callbacks;
 
+import com.chatapp.common.ResponseCode;
 import com.chatapp.common.ServiceResponse;
 import io.grpc.stub.StreamObserver;
 import java.util.logging.Logger;
@@ -18,10 +19,10 @@ public class ServiceResponseCallback implements StreamObserver<ServiceResponse> 
      */
     @Override
     public void onNext(ServiceResponse value) {
-        if (value.getResponseCode() == 1) {
+        if (value.getResponseCode() == ResponseCode.SUCCESS) {
             Logger.getLogger(ServiceResponseCallback.class.getName()).info("Request successful");
         } else {
-            Logger.getLogger(ServiceResponseCallback.class.getName()).info(value.getResponse());
+            Logger.getLogger(ServiceResponseCallback.class.getName()).info(value.getResponseCode().toString());
         }
     }
 

@@ -44,7 +44,7 @@ public class StatusService extends StatusServiceGrpc.StatusServiceImplBase {
      */
     @Override
     public void receiveStatus(GetRequest request, StreamObserver<StatusUpdate> responseObserver) {
-        JWToken token = new JWToken(request.getToken());
+        JWToken token = new JWToken(request.getToken().getToken());
         if (token.isValid()) {
             String username = token.getUsername();
             int userId = token.getUserId();

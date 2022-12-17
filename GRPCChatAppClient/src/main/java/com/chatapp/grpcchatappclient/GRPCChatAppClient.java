@@ -13,6 +13,9 @@ import com.chatapp.chat.GetChatRequest;
 import com.chatapp.chat.SendMessageRequest;
 import com.chatapp.dataobjects.Friend;
 import com.chatapp.common.GetRequest;
+import com.chatapp.common.LoginToken;
+import com.chatapp.common.ResponseCode;
+import com.chatapp.common.ServiceResponse;
 import com.chatapp.common.User;
 import com.chatapp.dataobjects.Chat;
 import com.chatapp.filetransfer.FileChunk;
@@ -26,8 +29,8 @@ import com.chatapp.friends.FriendManagingServiceGrpc;
 import com.chatapp.friends.FriendRequest;
 import com.chatapp.listeners.FileListener;
 import com.chatapp.login.LoginRequest;
+import com.chatapp.login.LoginResponse;
 import com.chatapp.login.LoginServiceGrpc;
-import com.chatapp.login.ServerResponse;
 import com.chatapp.observers.FileUploadObserver;
 import com.chatapp.status.StatusServiceGrpc;
 
@@ -116,7 +119,8 @@ public class GRPCChatAppClient {
 
     /**
      * Attempts to log in to the server.This method sends the username and
- password provided by the user and sends it to the server to be verified. If the information is correct, the server returns a <code>JWToken</code>
+     * password provided by the user and sends it to the server to be verified.
+     * If the information is correct, the server returns a <code>JWToken</code>
      * to be used in all subsequent calls and the client sets up all necessary
      * gRCP stubs and returns true. If the login information is wrong the method
      * simply returns false and no stubs are created.
@@ -124,26 +128,23 @@ public class GRPCChatAppClient {
      * @param username username to be sent to server.
      * @param password password to be sent to server.
      * @return server's request response.
-     * 
+     *
      */
     public String login(String username, String password) {
 
         LoginRequest request = LoginRequest.newBuilder().setUsername(username).setPassword(password).build();
 
         try {
-            ServerResponse response = loginBlockingStub.login(request);
-            if (response.getResponseCode() == 1) {
-                JWToken = response.getToken();
+            LoginResponse response = loginBlockingStub.login(request);
+            if (response.getResponseCode() == ResponseCode.SUCCESS) {
+                JWToken = response.getToken().getToken();
                 statusStub = StatusServiceGrpc.newStub(channel);
                 chatStub = ChatServiceGrpc.newStub(channel);
                 friendStub = FriendManagingServiceGrpc.newStub(channel);
                 fileStub = FileServiceGrpc.newStub(channel);
                 fileBlockingStub = FileServiceGrpc.newBlockingStub(channel);
-
-                return "SUCCESS";
-            } else {
-                return response.getToken();
             }
+            return response.getResponseCode().toString();
         } catch (StatusRuntimeException e) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.WARNING, "RPC failed: {0}", e.getStatus());
             return "SERVER_ERROR";
@@ -155,11 +156,11 @@ public class GRPCChatAppClient {
      * Sends a logoff request to the server.
      */
     public void logoff() {
-        GetRequest request = GetRequest.newBuilder().setToken(JWToken).build();
+        GetRequest request = GetRequest.newBuilder().setToken(LoginToken.newBuilder().setToken(JWToken)).build();
 
         try {
-            ServerResponse response = loginBlockingStub.logout(request);
-            if (response.getResponseCode() == 1) {
+            ServiceResponse response = loginBlockingStub.logout(request);
+            if (response.getResponseCode() == ResponseCode.SUCCESS) {
                 JWToken = "";
                 System.out.println("Logout successful");
             } else {
@@ -182,8 +183,8 @@ public class GRPCChatAppClient {
 
         LoginRequest request = LoginRequest.newBuilder().setUsername(username).setPassword(password).build();
         try {
-            ServerResponse response = loginBlockingStub.createAccount(request);
-            return response.getToken();
+            ServiceResponse response = loginBlockingStub.createAccount(request);
+            return response.getResponseCode().toString();
         } catch (StatusRuntimeException e) {
             Logger.getLogger(GRPCChatAppClient.class.getName()).log(Level.WARNING, "RPC failed: {0}", e.getStatus());
             return "SERVER_ERROR";
@@ -197,7 +198,7 @@ public class GRPCChatAppClient {
      * otherwise <code>false</code>.
      */
     public boolean requestStreams() {
-        GetRequest request = GetRequest.newBuilder().setToken(JWToken).build();
+        GetRequest request = GetRequest.newBuilder().setToken(LoginToken.newBuilder().setToken(JWToken)).build();
 
         try {
             chatStub.receiveMessage(request, new NewMessageCallback(messageListeners));
@@ -216,7 +217,7 @@ public class GRPCChatAppClient {
      */
     public void getFriendsAndRequests() {
 
-        GetRequest request = GetRequest.newBuilder().setToken(JWToken).build();
+        GetRequest request = GetRequest.newBuilder().setToken(LoginToken.newBuilder().setToken(JWToken)).build();
 
         try {
             friendStub.getFriendsAndRequests(request, new ServiceResponseCallback());
@@ -247,7 +248,7 @@ public class GRPCChatAppClient {
 // build metadata
         FileUploadRequest metadata = FileUploadRequest.newBuilder()
                 .setMetadata(MetaData.newBuilder()
-                        .setToken(JWToken)
+                        .setToken(LoginToken.newBuilder().setToken(JWToken))
                         .setFileType("jpg")
                         .setIsProfilePic(true))
                 .build();
@@ -287,7 +288,7 @@ public class GRPCChatAppClient {
 
         FileUploadRequest metadata = FileUploadRequest.newBuilder()
                 .setMetadata(MetaData.newBuilder()
-                        .setToken(JWToken)
+                        .setToken(LoginToken.newBuilder().setToken(JWToken))
                         .setFileName(FilenameUtils.getBaseName(path.toString()))
                         .setFileType(FilenameUtils.getExtension(path.toString()))
                         .setIsProfilePic(false)
@@ -327,7 +328,12 @@ public class GRPCChatAppClient {
         OutputStream writer;
         String filePath = "";
         FileDownloadRequest request = FileDownloadRequest.newBuilder()
-                .setMetadata(MetaData.newBuilder().setToken(JWToken).setFileName(fileName).setFileType(fileType).setIsProfilePic(isProfilePicture).setFriend(User.newBuilder().setUserId(friendId)))
+                .setMetadata(MetaData.newBuilder()
+                        .setToken(LoginToken.newBuilder().setToken(JWToken))
+                        .setFileName(fileName)
+                        .setFileType(fileType)
+                        .setIsProfilePic(isProfilePicture)
+                        .setFriend(User.newBuilder().setUserId(friendId)))
                 .build();
 
         Path saveLocation;
@@ -370,7 +376,8 @@ public class GRPCChatAppClient {
      */
     public void respondToRequest(Friend requester, int response) {
 
-        AnswerRequest.Builder request = AnswerRequest.newBuilder().setToken(JWToken)
+        AnswerRequest.Builder request = AnswerRequest.newBuilder()
+                .setToken(LoginToken.newBuilder().setToken(JWToken))
                 .setRequester(User.newBuilder().setUserId(requester.getUserId()).setUsername(requester.getUsername()));
 
         switch (response) {
@@ -404,11 +411,14 @@ public class GRPCChatAppClient {
      * Sends request to server to add a user as a friend.
      *
      * @param friendname username of user to be sent the friend request.
-     * 
+     *
      */
     public void addFriend(String friendname) {
 
-        FriendRequest request = FriendRequest.newBuilder().setToken(JWToken).setFriend(friendname).build();
+        FriendRequest request = FriendRequest.newBuilder()
+                .setToken(LoginToken.newBuilder().setToken(JWToken))
+                .setFriend(friendname)
+                .build();
         try {
             friendStub.addFriendship(request, new ServiceResponseCallback());
         } catch (StatusRuntimeException e) {
@@ -425,8 +435,10 @@ public class GRPCChatAppClient {
      */
     public void fetchMessages(String friendLogin, int friendId) {
 
-        GetChatRequest request = GetChatRequest.newBuilder().setToken(JWToken)
-                .setFriend(User.newBuilder().setUserId(friendId).setUsername(friendLogin).build()).build();
+        GetChatRequest request = GetChatRequest.newBuilder()
+                .setToken(LoginToken.newBuilder().setToken(JWToken))
+                .setFriend(User.newBuilder().setUserId(friendId).setUsername(friendLogin))
+                .build();
 
         try {
             chatStub.getMessages(request, new GetMessagesCallback(messageListeners));
@@ -445,9 +457,11 @@ public class GRPCChatAppClient {
      */
     public void msg(String recipientName, int recipientId, String message) {
 
-        SendMessageRequest request = SendMessageRequest.newBuilder().setToken(JWToken)
+        SendMessageRequest request = SendMessageRequest.newBuilder()
+                .setToken(LoginToken.newBuilder().setToken(JWToken))
                 .setReciever(User.newBuilder().setUsername(recipientName).setUserId(recipientId))
-                .setMessage(message).build();
+                .setMessage(message)
+                .build();
 
         try {
             chatStub.sendMessage(request, new ServiceResponseCallback());

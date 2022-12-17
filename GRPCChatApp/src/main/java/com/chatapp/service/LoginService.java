@@ -2,13 +2,16 @@ package com.chatapp.service;
 
 import com.chatapp.chat.ChatMessage;
 import com.chatapp.common.GetRequest;
+import com.chatapp.common.LoginToken;
+import com.chatapp.common.ResponseCode;
+import com.chatapp.common.ServiceResponse;
 import com.chatapp.common.User;
 import com.chatapp.database.MySqlConnection;
 import com.chatapp.friends.UserFriend;
 import com.chatapp.grpcchatapp.JWToken;
 import com.chatapp.login.LoginRequest;
+import com.chatapp.login.LoginResponse;
 import com.chatapp.login.LoginServiceGrpc;
-import com.chatapp.login.ServerResponse;
 import com.chatapp.status.StatusUpdate;
 import io.grpc.stub.StreamObserver;
 import java.sql.SQLException;
@@ -58,9 +61,9 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
      * @param responseObserver the call's stream observer.
      */
     @Override
-    public void logout(GetRequest request, StreamObserver<ServerResponse> responseObserver) {
-        JWToken token = new JWToken(request.getToken());
-        ServerResponse.Builder response = ServerResponse.newBuilder();
+    public void logout(GetRequest request, StreamObserver<ServiceResponse> responseObserver) {
+        JWToken token = new JWToken(request.getToken().getToken());
+        ServiceResponse.Builder response = ServiceResponse.newBuilder();
         if (token.isValid()) {
             String username = token.getUsername();
             int userId = token.getUserId();
@@ -90,17 +93,14 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
                         statusObservers.get(friend).onNext(statusUpdate);
                     }
                 }
-                response.setToken("SUCCESS");
-                response.setResponseCode(1);
+                response.setResponseCode(ResponseCode.SUCCESS);
             } catch (SQLException ex) {
                 Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
-                response.setToken("INTERNAL_ERROR");
-                response.setResponseCode(0);
+                response.setResponseCode(ResponseCode.INTERNAL_ERROR);
             }
 
         } else {
-            response.setToken("INVALID_CREDENTIALS");
-            response.setResponseCode(0);
+            response.setResponseCode(ResponseCode.INVALID_CREDENTIALS);
         }
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
@@ -116,24 +116,25 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
      * @param responseObserver the call's stream observer.
      */
     @Override
-    public void login(LoginRequest request, StreamObserver<ServerResponse> responseObserver) {
+    public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
         String username = request.getUsername();
         String password = request.getPassword();
 
-        ServerResponse.Builder response = ServerResponse.newBuilder();
+        LoginResponse.Builder response = LoginResponse.newBuilder();
         MySqlConnection database = new MySqlConnection();
         
         try {
             int userId = database.getUserId(username);
             if (userId != 0 && database.checkPassword(userId, password)) {
                 JWToken token = new JWToken(username, userId);
-                response.setToken(token.toString()).setResponseCode(1);
+                response.setToken(LoginToken.newBuilder().setToken(token.toString()))
+                        .setResponseCode(ResponseCode.SUCCESS);
             } else {
-                response.setToken("INVALID_CREDENTIALS").setResponseCode(0);
+                response.setResponseCode(ResponseCode.INVALID_CREDENTIALS);
             }
         } catch (SQLException ex) {
             Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
-            response.setToken("INTERNAL_ERROR");
+            response.setResponseCode(ResponseCode.INTERNAL_ERROR);
         }
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
@@ -150,11 +151,11 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
      * @param responseObserver the call's stream observer.
      */
     @Override
-    public void createAccount(LoginRequest request, StreamObserver<ServerResponse> responseObserver) {
+    public void createAccount(LoginRequest request, StreamObserver<ServiceResponse> responseObserver) {
         String username = request.getUsername();
         String password = request.getPassword();
 
-        ServerResponse.Builder response = ServerResponse.newBuilder();
+        ServiceResponse.Builder response = ServiceResponse.newBuilder();
         MySqlConnection database = new MySqlConnection();
         try {
             if (database.getUserId(username) == 0) {
@@ -165,16 +166,13 @@ public class LoginService extends LoginServiceGrpc.LoginServiceImplBase {
                 String hashedpass = DigestUtils.sha256Hex(saltedpass);
 
                 database.addNewUser(username, hashedpass, salt);
-                response.setToken("SUCCESS");
-                response.setResponseCode(1);
+                response.setResponseCode(ResponseCode.SUCCESS);
             } else {
-                response.setToken("INVALID_ARGUMENTS");
-                response.setResponseCode(0);
+                response.setResponseCode(ResponseCode.INVALID_ARGUMENTS);
             }
         } catch (SQLException ex) {
             Logger.getLogger(LoginService.class.getName()).log(Level.SEVERE, null, ex);
-            response.setToken("INTERNAL_ERROR");
-            response.setResponseCode(0);
+            response.setResponseCode(ResponseCode.INTERNAL_ERROR);
         }
 
         responseObserver.onNext(response.build());

@@ -15,11 +15,23 @@ message Empty {
 
 message ServiceResponse {
 
-    string response = 1;
-    int32 response_code = 2;
+  ResponseCode response_code = 1;
 }
 
 message GetRequest {
 
+  LoginToken token = 1;
+}
+
+message LoginToken {
+
   string token = 1;
+} 
+
+enum ResponseCode {
+
+  SUCCESS = 0;
+  INTERNAL_ERROR = 1;
+  INVALID_CREDENTIALS = 2;
+  INVALID_ARGUMENTS = 3;
 }

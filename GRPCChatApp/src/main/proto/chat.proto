@@ -17,7 +17,7 @@ service ChatService {
 
 message SendMessageRequest {
 
-  string token = 1;
+  common.LoginToken token = 1;
   common.User reciever = 2;
   string message = 3;
 }
@@ -39,7 +39,7 @@ message MessageList {
 
 message GetChatRequest {
 
-  string token = 1;
+  common.LoginToken token = 1;
   common.User friend = 2;
 }
 

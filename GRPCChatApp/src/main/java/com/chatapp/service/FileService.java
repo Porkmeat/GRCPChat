@@ -78,7 +78,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
             public void onNext(FileUploadRequest fileUploadRequest) {
                 try {
                     if (fileUploadRequest.hasMetadata()) {
-                        JWToken token = new JWToken(fileUploadRequest.getMetadata().getToken());
+                        JWToken token = new JWToken(fileUploadRequest.getMetadata().getToken().getToken());
                         if (token.isValid()) {
                             validToken = token;
                             friendId = fileUploadRequest.getMetadata().getFriend().getUserId();
@@ -153,7 +153,7 @@ public class FileService extends FileServiceGrpc.FileServiceImplBase {
     @Override
     public void fileDownload(FileDownloadRequest request, StreamObserver<FileDownloadResponse> responseObserver) {
 
-        JWToken token = new JWToken(request.getMetadata().getToken());
+        JWToken token = new JWToken(request.getMetadata().getToken().getToken());
         if (token.isValid()) {
             try {
                 Path fileLocation;

@@ -6,6 +6,7 @@ import com.chatapp.chat.GetChatRequest;
 import com.chatapp.chat.MessageList;
 import com.chatapp.chat.SendMessageRequest;
 import com.chatapp.common.GetRequest;
+import com.chatapp.common.ResponseCode;
 import com.chatapp.common.ServiceResponse;
 import com.chatapp.database.MySqlConnection;
 import com.chatapp.grpcchatapp.JWToken;
@@ -46,7 +47,7 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
      */
     @Override
     public void getMessages(GetChatRequest request, StreamObserver<MessageList> responseObserver) {
-        JWToken token = new JWToken(request.getToken());
+        JWToken token = new JWToken(request.getToken().getToken());
         MessageList.Builder response = MessageList.newBuilder();
 
         if (token.isValid()) {
@@ -91,7 +92,7 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
      */
     @Override
     public void sendMessage(SendMessageRequest request, StreamObserver<ServiceResponse> responseObserver) {
-        JWToken token = new JWToken(request.getToken());
+        JWToken token = new JWToken(request.getToken().getToken());
         ServiceResponse.Builder response = ServiceResponse.newBuilder();
 
         if (token.isValid()) {
@@ -106,16 +107,13 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
             try {
                 database.saveMsg(userId, friendId, message);
 
-                response.setResponse("SUCCESS");
-                response.setResponseCode(1);
+                response.setResponseCode(ResponseCode.SUCCESS);
             } catch (SQLException ex) {
                 Logger.getLogger(ChatService.class.getName()).log(Level.SEVERE, null, ex);
-                response.setResponse("INTERNAL_ERROR");
-                response.setResponseCode(0);
+                response.setResponseCode(ResponseCode.INTERNAL_ERROR);
             }
         } else {
-            response.setResponse("INVALID_CREDENTIALS");
-            response.setResponseCode(0);
+            response.setResponseCode(ResponseCode.INVALID_CREDENTIALS);
         }
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
@@ -132,7 +130,7 @@ public class ChatService extends ChatServiceGrpc.ChatServiceImplBase {
     @Override
     public void receiveMessage(GetRequest request, StreamObserver<ChatMessage> responseObserver) {
 
-        JWToken token = new JWToken(request.getToken());
+        JWToken token = new JWToken(request.getToken().getToken());
         if (token.isValid()) {
             int userId = token.getUserId();
             messageObservers.put(userId, responseObserver);

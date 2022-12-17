@@ -45,14 +45,14 @@ message AnswerRequest {
     BLOCKED = 2;
   }
 
-  string token = 1;
+  common.LoginToken token = 1;
   common.User requester = 2;
   Answer answer = 3; 
 }
 
 message FriendRequest {
 
-  string token = 1;
+  common.LoginToken token = 1;
   string friend = 2;
 }
 

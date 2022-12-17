@@ -1,6 +1,7 @@
 package com.chatapp.service;
 
 import com.chatapp.common.GetRequest;
+import com.chatapp.common.ResponseCode;
 import com.chatapp.common.ServiceResponse;
 import com.chatapp.common.User;
 import com.chatapp.database.MySqlConnection;
@@ -58,7 +59,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
      */
     @Override
     public void setFriendship(AnswerRequest request, StreamObserver<ServiceResponse> responseObserver) {
-        JWToken token = new JWToken(request.getToken());
+        JWToken token = new JWToken(request.getToken().getToken());
         ServiceResponse.Builder response = ServiceResponse.newBuilder();
 
         if (token.isValid()) {
@@ -92,18 +93,15 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                         database.blockRequest(userId, requesterId);
                 }
 
-                response.setResponse("SUCCESS");
-                response.setResponseCode(1);
+                response.setResponseCode(ResponseCode.SUCCESS);
 
             } catch (SQLException ex) {
 
                 Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
-                response.setResponse("INTERNAL_ERROR");
-                response.setResponseCode(0);
+                response.setResponseCode(ResponseCode.INTERNAL_ERROR);
             }
         } else {
-            response.setResponse("INVALID_CREDENTIALS");
-            response.setResponseCode(0);
+            response.setResponseCode(ResponseCode.INVALID_CREDENTIALS);
         }
 
         responseObserver.onNext(response.build());
@@ -118,7 +116,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
      */
     @Override
     public void getFriendsAndRequests(GetRequest request, StreamObserver<ServiceResponse> responseObserver) {
-        JWToken token = new JWToken(request.getToken());
+        JWToken token = new JWToken(request.getToken().getToken());
         ServiceResponse.Builder response = ServiceResponse.newBuilder();
         if (token.isValid()) {
 
@@ -132,13 +130,13 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                         userObservers.get(userId).onNext(generateUserFriend(result));
                     }
                 }
-                response.setResponse("SUCCESS").setResponseCode(1);
+                response.setResponseCode(ResponseCode.SUCCESS);
             } catch (SQLException ex) {
                 Logger.getLogger(FriendManagementService.class.getName()).log(Level.SEVERE, null, ex);
-                response.setResponse("INTERNAL_ERROR").setResponseCode(0);
+                response.setResponseCode(ResponseCode.INTERNAL_ERROR);
             }
         } else {
-            response.setResponse("INVALID_CREDENTIALS").setResponseCode(0);
+            response.setResponseCode(ResponseCode.INVALID_CREDENTIALS);
         }
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
@@ -155,7 +153,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
      */
     @Override
     public void recieveUsers(GetRequest request, StreamObserver<UserFriend> responseObserver) {
-        JWToken token = new JWToken(request.getToken());
+        JWToken token = new JWToken(request.getToken().getToken());
         if (token.isValid()) {
             int userId = token.getUserId();
             userObservers.put(userId, responseObserver);
@@ -172,7 +170,7 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
      */
     @Override
     public void addFriendship(FriendRequest request, StreamObserver<ServiceResponse> responseObserver) {
-        JWToken token = new JWToken(request.getToken());
+        JWToken token = new JWToken(request.getToken().getToken());
         ServiceResponse.Builder response = ServiceResponse.newBuilder();
         if (token.isValid()) {
             int userId = token.getUserId();
@@ -193,22 +191,18 @@ public class FriendManagementService extends FriendManagingServiceGrpc.FriendMan
                         userObservers.get(friendId).onNext(user.build());
                     }
 
-                    response.setResponse("SUCCESS");
-                    response.setResponseCode(1);
+                    response.setResponseCode(ResponseCode.SUCCESS);
                 } else {
-                    response.setResponse("INVALID_ARGUMENTS");
-                    response.setResponseCode(0);
+                    response.setResponseCode(ResponseCode.INVALID_ARGUMENTS);
 
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(FriendManagementService.class
                         .getName()).log(Level.SEVERE, null, ex);
-                response.setResponse("INTERNAL_ERROR");
-                response.setResponseCode(0);
+                response.setResponseCode(ResponseCode.INTERNAL_ERROR);
             }
         } else {
-            response.setResponse("INVALID_CREDENTIALS");
-            response.setResponseCode(0);
+            response.setResponseCode(ResponseCode.INVALID_CREDENTIALS);
         }
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
